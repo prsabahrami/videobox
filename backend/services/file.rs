@@ -1,9 +1,12 @@
 use actix_multipart::Multipart;
 use actix_web::{HttpResponse, ResponseError};
-use actix_web::web::{Data, Path};
+use actix_web::web::{Data, Path, Query};
 use serde::Serialize;
 use create_rust_app::{Attachment, AttachmentBlob, AttachmentData, Database, Storage};
 use futures_util::StreamExt as _;
+use log::{debug};
+use crate::services::todo::PaginationParams;
+use crate::models::attachment_blobs::generated::AttachmentBlob as AttachmentBlobModel;
 
 #[derive(Serialize)]
 #[tsync::tsync]
@@ -38,6 +41,24 @@ async fn all(db: Data<Database>, storage: Data<Storage>) -> HttpResponse {
     }
 
     HttpResponse::Ok().json(files)
+}
+
+#[actix_web::get("/pg")]
+async fn index(
+    db: Data<Database>,
+    Query(info): Query<PaginationParams>,
+) -> HttpResponse {
+    let mut con = db.get_connection().unwrap();
+
+    let result = AttachmentBlobModel::paginate(&mut con, info.page, info.page_size);
+
+    debug!("result {:?}", result);
+
+    if result.is_ok() {
+        HttpResponse::Ok().json(result.unwrap())
+    } else {
+        HttpResponse::InternalServerError().finish()
+    }
 }
 
 #[actix_web::delete("/{id}")]
@@ -98,5 +119,6 @@ pub fn endpoints(scope: actix_web::Scope) -> actix_web::Scope {
     return scope
         .service(create)
         .service(all)
-        .service(delete);
+        .service(delete)
+        .service(index);
 }

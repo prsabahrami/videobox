@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import {describe} from "node:test";
 
 const TodoAPI = {
   get: async (page: number, size: number) =>
@@ -28,13 +29,14 @@ const TodoAPI = {
 export const Todos = () => {
   const [text, setText] = useState<string>('')
   const [selectedTodo, editTodo] = useState<Todo | null>(null)
-  const [todos, setTodos] = useState<PaginationResult<Todo>>()
+  const [todos,setTodos] = useState<PaginationResult<Todo>>()
   const [createdTodo, setCreatedTodo] = useState<Todo>()
   const pageSize = 5
   const [page, setPage] = useState<number>(0)
   const [numPages, setPages] = useState<number>(1)
   const [processing, setProcessing] = useState<boolean>(false)
 
+  console.log("Num pages: ", TodoAPI.get(page, pageSize))
   const createTodo = async (todo: string) => {
     setProcessing(true)
     let createdTodo = await TodoAPI.create(todo)

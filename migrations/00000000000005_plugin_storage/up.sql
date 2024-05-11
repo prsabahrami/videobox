@@ -21,3 +21,5 @@ CREATE TABLE attachments(
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+SELECT manage_updated_at('attachments');
