@@ -33,15 +33,6 @@ diesel::table! {
 }
 
 diesel::table! {
-    todos (id) {
-        id -> Int4,
-        text -> Text,
-        created_at -> Timestamptz,
-        updated_at -> Timestamptz,
-    }
-}
-
-diesel::table! {
     user_oauth2_links (id) {
         id -> Int4,
         provider -> Text,
@@ -105,7 +96,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     attachment_blobs,
     attachments,
     role_permissions,
-    todos,
     user_oauth2_links,
     user_permissions,
     user_roles,

@@ -9,7 +9,6 @@ import { ResetPage } from './containers/ResetPage'
 import React from 'react'
 import './App.css'
 import { Home } from './containers/Home'
-import { Todos } from './containers/Todo'
 import { Files } from './containers/Files'
 import { Route, useNavigate, Routes } from 'react-router-dom'
 
@@ -26,7 +25,6 @@ const App = () => {
       <div className="App-nav-header">
         <div style={{ display: 'flex', flex: 1 }}>
           <a className="NavButton" onClick={() => navigate('/')}>Home</a>
-          <a className="NavButton" onClick={() => navigate('/todos')}>Todos</a>
         <a className="NavButton" onClick={() => navigate('/files')}>Files</a>
           {/* CRA: left-aligned nav buttons */}
           <a className="NavButton" onClick={() => navigate('/account')}>Account</a>
@@ -40,7 +38,6 @@ const App = () => {
       <div style={{ margin: '0 auto', maxWidth: '800px' }}>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/todos" element={<Todos />} />
           {/* CRA: routes */}
             <Route path="/files" element={<Files />} />
           <Route path="/login" element={<LoginPage />} />

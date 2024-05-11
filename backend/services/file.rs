@@ -5,7 +5,6 @@ use serde::Serialize;
 use create_rust_app::{Attachment, AttachmentBlob, AttachmentData, Database, Storage};
 use futures_util::StreamExt as _;
 use log::{debug};
-use crate::services::todo::PaginationParams;
 use crate::models::attachment_blobs::generated::AttachmentBlob as AttachmentBlobModel;
 
 #[derive(Serialize)]
@@ -16,6 +15,14 @@ struct FileInfo {
     pub name: String,
     pub url: Option<String>,
 }
+
+#[tsync::tsync]
+#[derive(serde::Deserialize)]
+pub struct PaginationParams {
+    pub page: i64,
+    pub page_size: i64,
+}
+
 
 #[actix_web::get("")]
 async fn all(db: Data<Database>, storage: Data<Storage>) -> HttpResponse {
