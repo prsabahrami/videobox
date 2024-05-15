@@ -23,6 +23,8 @@ This project was bootstrapped with [Create Rust App](https://github.com/wulf/cre
   - For PostgreSQL: `cargo install diesel_cli --no-default-features --features postgres`
   - For SQLite: `cargo install diesel_cli --no-default-features --features sqlite-bundled`
 - `cargo-watch`: To recompile on change, run `cargo install cargo-watch`
+- Mold: Ensure Mold is installed to take advantage of faster compile times. Installation instructions can be found [here](https://github.com/rui314/mold).
+
 
 ## Setup
 
