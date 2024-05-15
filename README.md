@@ -1,75 +1,35 @@
-# Getting Started with Create Rust App
+# Videobox - Secure and Expirable Video Sharing
+
+Videobox is a web application designed to share class recordings securely and efficiently, providing educators and students with expirable link-based access without the need for downloads. This project aims to overcome the limitations of mainstream cloud services, which can be costly and may require users to fetch entire video content before playing.
+
+## Motivation
+
+The inception of Videobox arose from the need for a simple, efficient way to share educational content that doesn't compromise on security and accessibility. Unlike services like Google Drive or Dropbox, Videobox allows instant streaming without full download and without requiring a specific email service account (Unlile Google Drive), making it ideal for educational environments.
+
+## Built With
+
+- **Actix/Rust**: Robust framework for building efficient and reliable backend services.
+- **React**: A JavaScript library for building user interfaces, ensuring a responsive and dynamic frontend.
+- **Diesel**: ORM used for database operations, primarily with PostgreSQL to manage user information securely and efficiently.
+- **AWS S3**: Utilized for secure and scalable storage of video files through multipart uploads.
+- **EvaporateJS**: (Considering) A JavaScript library for directly uploading files from a browser to AWS S3, enhancing the upload process with resilience to network failures.
 
 This project was bootstrapped with [Create Rust App](https://github.com/wulf/create-rust-app).
 
 ## Requirements
 
-- [stable Rust](https://www.rust-lang.org/tools/install)
-- Diesel CLI 
-  - if using postgres, `cargo install diesel_cli --no-default-features --features postgres`
-  - if using sqlite, `cargo install diesel_cli --no-default-features --features sqlite-bundled`
-- cargo-watch to recompile on change:
-  - `cargo install cargo-watch` (allows running `cargo watch -x run -i frontend/` for continuous compilation; see "available scripts")
+- [Stable Rust](https://www.rust-lang.org/tools/install)
+- Diesel CLI
+  - For PostgreSQL: `cargo install diesel_cli --no-default-features --features postgres`
+  - For SQLite: `cargo install diesel_cli --no-default-features --features sqlite-bundled`
+- `cargo-watch`: To recompile on change, run `cargo install cargo-watch`
 
-## Notes
+## Setup
 
-- In development, the `.env` file is read (use `.env.example` for reference)
-- In production, environment variables are sourced directly
+First, ensure that the `.env` file is properly configured according to the `.env.example` provided. This will configure your local environment variables necessary for development and production.
 
-## Available Scripts
+### Running the App
 
-In the project directory, you can run:
-
-### `cargo fullstack`
-
-Runs the app in development mode and watches for changes. Visit [http://localhost:3000](http://localhost:3000) to view it.
-
-Any frontend changes should instantly appear. Backend changes will need to recompile.
-Needs `cargo-watch` installed, see requirements.
-
-To test/debug issues with the production build, set the `debug-assertions` to `true` for `[profile.dev]` in `Cargo.toml`. This way, development-only code paths are discarded and instead, production-only code paths are included.
-
-Alternatively, use `cargo run` to run the app in development mode without watching for file changes.
-
-### `cargo build`
-
-Builds a production-ready build.
-
-### `cargo tsync`
-
-Generates the typescript types from rust code marked with [`tsync`](https://github.com/Wulf/tsync).
-Outputs to `frontend/src/types/rust.d.ts`.
-
-### Running frontend and backend individually
-
-```sh
-# frontend
-cd frontend && npm && npm start
-```
-
-```sh
-# backend
-cargo watch -x run -i frontend/
-```
-
-## Database Migrations
-
-- `diesel migration generate <migration_name>`
-- `diesel migration run`
-- `diesel migration revert`
-
-- `diesel database setup`
-- `diesel database reset`
-
-# Tips
-* Use the [mold](https://github.com/rui314/mold) linker for slightly faster compilation.
-
-
-# Containerize your application
-      
-## Building a container
-`docker build -t image-name .`
-
-## Running the container
-`docker run -e SECRET_KEY=123 -e DATABASE_URL=postgres://postgres:postgres@localhost/database -p 3000:3000 image-name`
-
+1. **Run in Development Mode:**
+   ```sh
+   cargo fullstack
