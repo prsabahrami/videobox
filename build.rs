@@ -17,6 +17,7 @@ use std::{io::Write, process::Command};
  */
 
 #[allow(dead_code)]
+#[allow(clippy::all)]
 fn shell(command: &str) {
     // println!("build.rs => {}", command);
 
