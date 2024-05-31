@@ -4,7 +4,6 @@ interface AttachmentBlob {
   id: number;
   key: string;
   file_name: string;
-  user_id: number;
   content_type?: string;
   byte_size: number;
   checksum: string;
@@ -15,7 +14,6 @@ interface AttachmentBlob {
 interface CreateAttachmentBlob {
   key: string;
   file_name: string;
-  user_id: number;
   content_type?: string;
   byte_size: number;
   checksum: string;
@@ -25,7 +23,6 @@ interface CreateAttachmentBlob {
 interface UpdateAttachmentBlob {
   key?: string;
   file_name?: string;
-  user_id?: number;
   content_type?: string;
   byte_size?: number;
   checksum?: string;
@@ -53,7 +50,3 @@ interface PaginationParams {
   page: number;
   page_size: number;
 }
-
-type ID = number
-
-type Utc = Date

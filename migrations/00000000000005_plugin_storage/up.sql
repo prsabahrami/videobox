@@ -14,7 +14,6 @@ CREATE TABLE attachment_blobs(
 CREATE TABLE attachments(
   id SERIAL PRIMARY KEY,
 
-  user_id INT NOT NULL REFERENCES users(id),
   name TEXT NOT NULL,
   record_type TEXT NOT NULL,
   record_id SERIAL NOT NULL,

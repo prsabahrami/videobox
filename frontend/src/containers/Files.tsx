@@ -1,7 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { useAuth, Session } from '../hooks/useAuth'
-import assert from "node:assert";
-
 
 const FilesAPI = {
     all: async () =>
@@ -25,10 +22,8 @@ export const Files = () => {
     const [numPages, setPages] = useState<number>(1)
     const [processing, setProcessing] = useState<boolean>(false)
 
-    const auth = useAuth()
-    const createFile = async (form: FormData, session: Session) => {
+    const createFile = async (form: FormData) => {
         setProcessing(true)
-        form.append("user_id", session.userId.toString())
         await FilesAPI.create(form)
         setFiles(await FilesAPI.all())
         setFilesPages(await FilesAPI.get(page, pageSize))
@@ -111,11 +106,10 @@ export const Files = () => {
                         disabled={processing}
                         style={{height: '40px'}}
                         onClick={() => {
-                            assert(auth.isAuthenticated && auth.session)
                             const form = new FormData()
                             const el = document.getElementById("file")! as HTMLInputElement
                             form.append("file", el.files![0])
-                            createFile(form, auth.session).then(r => {
+                            createFile(form).then(r => {
                                 console.log(r)
                             })
                         }}

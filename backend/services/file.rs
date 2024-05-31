@@ -2,12 +2,10 @@ use actix_multipart::Multipart;
 use actix_web::{HttpResponse, ResponseError};
 use actix_web::web::{Data, Path, Query};
 use serde::Serialize;
-use crate::services::{attachment::Attachment, attachment_blob::AttachmentBlob, attachment::AttachmentData, database::Database, storage::Storage};
+use create_rust_app::{Attachment, AttachmentBlob, AttachmentData, Database, Storage};
 use futures_util::StreamExt as _;
-use log::{debug, info};
+use log::{debug};
 use crate::models::attachment_blobs::generated::AttachmentBlob as AttachmentBlobModel;
-use thumbnailer::{create_thumbnails, Thumbnail, ThumbnailSize};
-
 
 #[derive(Serialize)]
 #[tsync::tsync]
@@ -111,33 +109,13 @@ async fn create(db: Data<Database>, store: Data<Storage>, mut payload: Multipart
                 let attached_req = Attachment::attach(&mut db, &store, "file".to_string(), "NULL".to_string(), 0, AttachmentData {
                     data,
                     file_name
-                }, false, true).await;
+                }, true, false).await;
 
                 if attached_req.is_err() {
                     return HttpResponse::InternalServerError().json(attached_req.err().unwrap());
                 }
             },
-            "user_id" => {
-                let mut data = Vec::new();
-                while let Some(chunk) = field.next().await {
-                    data.extend_from_slice(&chunk.unwrap()[..]);
-                }
-
-                let user_id = String::from_utf8(data).unwrap();
-                let user_id = user_id.parse::<i32>().unwrap();
-
-                let attached_req = Attachment::attach(&mut db, &store, "file".to_string(), "NULL".to_string(), user_id, AttachmentData {
-                    data: Vec::new(),
-                    file_name: None
-                }, false, true).await;
-
-                if attached_req.is_err() {
-                    return HttpResponse::InternalServerError().json(attached_req.err().unwrap());
-                }
-            },
-            _ => {
-                return HttpResponse::BadRequest().finish();
-            }
+            _ => {}
         }
     }
 

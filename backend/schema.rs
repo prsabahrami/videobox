@@ -16,7 +16,6 @@ diesel::table! {
 diesel::table! {
     attachments (id) {
         id -> Int4,
-        user_id -> Int4,
         name -> Text,
         record_type -> Text,
         record_id -> Int4,
@@ -88,7 +87,6 @@ diesel::table! {
 }
 
 diesel::joinable!(attachments -> attachment_blobs (blob_id));
-diesel::joinable!(attachments -> users (user_id));
 diesel::joinable!(user_oauth2_links -> users (user_id));
 diesel::joinable!(user_permissions -> users (user_id));
 diesel::joinable!(user_roles -> users (user_id));
