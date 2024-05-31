@@ -35,7 +35,7 @@ class Permissions {
   }
 }
 
-export interface Session {
+interface Session {
   expiresOnUTC: number
   userId: ID
   roles: string[]
