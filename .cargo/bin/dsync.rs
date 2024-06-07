@@ -25,14 +25,14 @@ pub fn main() {
             ]),
             table_options: HashMap::from([
                 // plugin_storage
-                ("attachment_blobs", TableOptions::default()),
+                ("attachment_blobs", TableOptions::default().ignore()),
                 ("attachments", TableOptions::default().ignore()),
                 // plugin_auth
                 ("role_permissions", TableOptions::default().ignore()),
                 ("user_permissions", TableOptions::default().ignore()),
                 ("user_roles", TableOptions::default().ignore()),
                 ("user_sessions", TableOptions::default().ignore()),
-                ("users", TableOptions::default().ignore()),
+                ("users", TableOptions::default()),
                 ("user_oauth2_links", TableOptions::default().ignore()),
                 // plugin_tasks
                 ("fang_tasks", TableOptions::default().ignore()),

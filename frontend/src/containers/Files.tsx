@@ -1,14 +1,24 @@
 import React, { useEffect, useState } from 'react'
+import { useAuth } from '../hooks/useAuth'
+import assert, {ok} from "node:assert";
+
 
 const FilesAPI = {
     all: async () =>
         await (await fetch(`/api/files`)).json(),
-    get: async (page: number, size: number) =>
-        await (await fetch(`/api/files/pg?page=${page}&page_size=${size}`)).json(),
-    create: async (formData: FormData) =>
+    get: async (page: number, size: number, accessToken: string) =>
+        await (await fetch(`/api/files/pg?page=${page}&page_size=${size}`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        })).json(),
+    create: async (formData: FormData, accessToken: string) =>
         await fetch('/api/files', {
             method: 'POST',
             body: formData,
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
         }),
     delete: async (id: number) =>
         await fetch(`/api/files/${id}`, { method: 'DELETE' })
@@ -16,27 +26,34 @@ const FilesAPI = {
 
 export const Files = () => {
     const [files, setFiles] = useState<FileInfo[]>([])
-    const [filespages, setFilesPages] = useState<PaginationResult<AttachmentBlob>>()
+    const [filespages, setFilesPages] = useState<PaginationResult<Attachment>>()
     const pageSize = 5
     const [page, setPage] = useState<number>(0)
     const [numPages, setPages] = useState<number>(1)
     const [processing, setProcessing] = useState<boolean>(false)
 
+    const auth = useAuth()
     const createFile = async (form: FormData) => {
         setProcessing(true)
-        await FilesAPI.create(form)
+        if (auth.accessToken) {
+            await FilesAPI.create(form, auth.accessToken!)
+        }
         setFiles(await FilesAPI.all())
-        setFilesPages(await FilesAPI.get(page, pageSize))
+        if (auth.accessToken) {
+            (await FilesAPI.get(page, pageSize, auth.accessToken))
+        }
         const el = document.getElementById("file")! as HTMLInputElement
         el.value = ''
         setProcessing(false)
     }
 
-    const deleteFile = async (file: AttachmentBlob) => {
+    const deleteFile = async (file: Attachment) => {
         setProcessing(true)
         await FilesAPI.delete(file.id)
         setFiles(await FilesAPI.all())
-        setFilesPages(await FilesAPI.get(page, pageSize))
+        if (auth.accessToken) {
+            setFilesPages(await FilesAPI.get(page, pageSize, auth.accessToken))
+        }
         setProcessing(false)
     }
 
@@ -50,10 +67,12 @@ export const Files = () => {
 
     useEffect(() => {
         setProcessing(true)
-        FilesAPI.get(page, pageSize).then((filepage) => {
-            setFilesPages(filepage)
-            setProcessing(false)
-        })
+        if (auth.accessToken) {
+            FilesAPI.get(page, pageSize, auth.accessToken).then((filepage) => {
+                setFilesPages(filepage)
+                setProcessing(false)
+            })
+        }
     }, [page])
 
     useEffect(() => {
@@ -68,7 +87,9 @@ export const Files = () => {
     useEffect(() => {
         console.log(files)
         console.log("Filespages: ")
-        console.log(FilesAPI.get(page, pageSize))
+        if (auth.accessToken) {
+            console.log(FilesAPI.get(page, pageSize, auth.accessToken))
+        }
     }, [files]);
 
     return (
@@ -77,9 +98,9 @@ export const Files = () => {
             {(!filespages || filespages.total_items == 0) && "No files, upload some!"}
             {filespages?.items && filespages?.items.map((file) =>
                 (
-                    <div className="Form">
+                    <div className="Form" key={file.id}>
                         <div style={{flex: 1}}>
-                            {file.file_name}
+                            {file.name}
                         </div>
                         <div>
                             <a href="http://google.com" className="todos-pagination">
@@ -103,9 +124,10 @@ export const Files = () => {
                         multiple={false}
                     />
                     <button
-                        disabled={processing}
+                        disabled={processing || !auth.isAuthenticated || !auth.session}
                         style={{height: '40px'}}
                         onClick={() => {
+                            // ok(auth.isAuthenticated && auth.session)
                             const form = new FormData()
                             const el = document.getElementById("file")! as HTMLInputElement
                             form.append("file", el.files![0])
