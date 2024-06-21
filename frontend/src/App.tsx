@@ -25,7 +25,7 @@ const App = () => {
       <div className="App-nav-header">
         <div style={{ display: 'flex', flex: 1 }}>
           <a className="NavButton" onClick={() => navigate('/')}>Home</a>
-        <a className="NavButton" onClick={() => navigate('/files')}>Files</a>
+          { auth.isAuthenticated && <a className="NavButton" onClick={() => navigate('/files')}>Files</a> }
           {/* CRA: left-aligned nav buttons */}
           <a className="NavButton" onClick={() => navigate('/account')}>Account</a>
         </div>
@@ -48,7 +48,6 @@ const App = () => {
           <Route path="/activate" element={<ActivationPage />} />
           <Route path="/register" element={<RegistrationPage />} />
           <Route path="/account" element={<AccountPage />} />
-    
         </Routes>
       </div>
     </div>
