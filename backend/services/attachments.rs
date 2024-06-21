@@ -70,12 +70,12 @@ impl Attachment {
     }
 
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut Connection, page: i64, page_size: i64, user_id: ID) -> QueryResult<PaginationResult<Self>> {
+    pub fn paginate(db: &mut Connection, page: i64, page_size: i64, user_id_input: ID) -> QueryResult<PaginationResult<Self>> {
         use crate::schema::attachments::dsl::*;
 
         let page_size = if page_size < 1 { 1 } else { page_size };
         let total_items = attachments.count().get_result(db)?;
-        let items = attachments.filter(user_id.eq(user_id)).limit(page_size).offset(page * page_size).load::<Self>(db)?;
+        let items = attachments.filter(user_id.eq(user_id_input)).limit(page_size).offset(page * page_size).load::<Self>(db)?;
 
         Ok(PaginationResult {
             items,

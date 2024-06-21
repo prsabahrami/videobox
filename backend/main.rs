@@ -1,6 +1,6 @@
 extern crate diesel;
 
-use actix_files::{Files};
+use actix_files::Files;
 use actix_web::{App, HttpServer, web};
 use actix_web::middleware::{Compress, Logger, TrailingSlash, NormalizePath};
 use actix_web::web::Data;
