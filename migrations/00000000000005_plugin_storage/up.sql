@@ -1,3 +1,15 @@
+CREATE TABLE attachments(
+  id SERIAL PRIMARY KEY,
+
+  user_id INTEGER REFERENCES users(id) NOT NULL,
+  name TEXT NOT NULL,
+  record_type TEXT NOT NULL,
+  record_id SERIAL NOT NULL,
+  blob_id SERIAL NOT NULL,
+
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE attachment_blobs(
   id SERIAL PRIMARY KEY,
 
@@ -10,16 +22,4 @@ CREATE TABLE attachment_blobs(
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
-CREATE TABLE attachments(
-  id SERIAL PRIMARY KEY,
-
-  name TEXT NOT NULL,
-  record_type TEXT NOT NULL,
-  record_id SERIAL NOT NULL,
-  blob_id SERIAL REFERENCES attachment_blobs(id) NOT NULL,
-
-  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
 SELECT manage_updated_at('attachments');
