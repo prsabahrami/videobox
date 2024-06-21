@@ -1,11 +1,12 @@
 use actix_multipart::Multipart;
 use actix_web::{HttpResponse, ResponseError};
 use actix_web::web::{Data, Path, Query};
+use actix_web_httpauth::extractors::bearer::BearerAuth;
 use serde::Serialize;
-use create_rust_app::{Attachment, AttachmentBlob, AttachmentData, Database, Storage};
+use create_rust_app::{auth::controller::get_user, Attachment, AttachmentBlob, AttachmentData, Database, Storage};
 use futures_util::StreamExt as _;
 use log::{debug};
-use crate::models::attachment_blobs::generated::AttachmentBlob as AttachmentBlobModel;
+use crate::services::attachments::Attachment as AttachmentModel;
 
 #[derive(Serialize)]
 #[tsync::tsync]
@@ -54,12 +55,14 @@ async fn all(db: Data<Database>, storage: Data<Storage>) -> HttpResponse {
 async fn index(
     db: Data<Database>,
     Query(info): Query<PaginationParams>,
+    auth: BearerAuth,
 ) -> HttpResponse {
     let mut con = db.get_connection().unwrap();
-
-    let result = AttachmentBlobModel::paginate(&mut con, info.page, info.page_size);
-
-    debug!("result {:?}", result);
+    
+    let token = auth.token();
+    let user_id = get_user(token.parse().unwrap());
+    
+    let result = AttachmentModel::paginate(&mut con, info.page, info.page_size, user_id.unwrap());
 
     if result.is_ok() {
         HttpResponse::Ok().json(result.unwrap())
@@ -83,8 +86,11 @@ async fn delete(db: Data<Database>, storage: Data<Storage>, file_id: Path<i32>) 
 }
 
 #[actix_web::post("")]
-async fn create(db: Data<Database>, store: Data<Storage>, mut payload: Multipart) -> HttpResponse {
+async fn create(db: Data<Database>, store: Data<Storage>, mut payload: Multipart, auth: BearerAuth) -> HttpResponse {
     let mut db = db.get_connection().unwrap();
+    let user_id = get_user(auth.token().parse().unwrap());
+    
+    debug!("User ID: {:?}", user_id);
 
     while let Some(item) = payload.next().await {
         let mut field = if item.is_ok() {
@@ -106,12 +112,13 @@ async fn create(db: Data<Database>, store: Data<Storage>, mut payload: Multipart
                     data.extend_from_slice(&chunk.unwrap()[..]);
                 }
 
-                let attached_req = Attachment::attach(&mut db, &store, "file".to_string(), "NULL".to_string(), 0, AttachmentData {
+                let attached_req = Attachment::attach(&mut db, &store, user_id.unwrap(), file_name.clone().unwrap(), "NULL".to_string(), 0, AttachmentData {
                     data,
                     file_name
                 }, true, false).await;
 
                 if attached_req.is_err() {
+                    debug!("Error attaching file: {:?}", attached_req);
                     return HttpResponse::InternalServerError().json(attached_req.err().unwrap());
                 }
             },
