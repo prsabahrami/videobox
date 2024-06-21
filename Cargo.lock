@@ -1075,7 +1075,7 @@ dependencies = [
 [[package]]
 name = "create-rust-app"
 version = "11.0.0"
-source = "git+https://github.com/prsabahrami/create-rust-app.git?branch=main#04b0686ac60407abdc3dd55f23c61a40f2fdb06e"
+source = "git+https://github.com/prsabahrami/create-rust-app.git?branch=main#2aa1874a1e01f552a7bb4b44de4075130ac6e398"
 dependencies = [
  "actix-files",
  "actix-http",

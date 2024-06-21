@@ -3,9 +3,9 @@ use actix_web::{HttpResponse, ResponseError};
 use actix_web::web::{Data, Path, Query};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use serde::Serialize;
-use create_rust_app::{auth::controller::get_user, Attachment, AttachmentBlob, AttachmentData, Database, Storage};
+use create_rust_app::{auth::controller::get_user, Attachment, AttachmentData, Database, Storage};
 use futures_util::StreamExt as _;
-use log::{debug};
+use log::debug;
 use crate::services::attachments::Attachment as AttachmentModel;
 
 #[derive(Serialize)]
@@ -22,33 +22,6 @@ struct FileInfo {
 pub struct PaginationParams {
     pub page: i64,
     pub page_size: i64,
-}
-
-
-#[actix_web::get("")]
-async fn all(db: Data<Database>, storage: Data<Storage>) -> HttpResponse {
-    let mut db = db.get_connection().unwrap();
-    let files = Attachment::find_all_for_record(&mut db, "file".to_string(), "NULL".to_string(), 0).unwrap_or_default();
-    let blob_ids = files.iter().map(|f| f.blob_id).collect::<Vec<_>>();
-    let blobs = AttachmentBlob::find_all_by_id(&mut db, blob_ids).unwrap_or_default();
-
-    let mut files = blobs.iter().enumerate().map(|b| FileInfo {
-        id: files[b.0].id,
-        key: b.1.clone().key,
-        name: b.1.clone().file_name,
-        url: None,
-    }).collect::<Vec<FileInfo>>();
-
-    for info in files.iter_mut() {
-        let uri = storage.download_uri(info.key.clone(), None).await;
-        if uri.is_err() {
-            return HttpResponse::InternalServerError().json(uri.err().unwrap());
-        }
-        let uri = uri.unwrap();
-        info.url = Some(uri);
-    }
-
-    HttpResponse::Ok().json(files)
 }
 
 #[actix_web::get("/pg")]
@@ -132,7 +105,6 @@ async fn create(db: Data<Database>, store: Data<Storage>, mut payload: Multipart
 pub fn endpoints(scope: actix_web::Scope) -> actix_web::Scope {
     return scope
         .service(create)
-        .service(all)
         .service(delete)
         .service(index);
 }

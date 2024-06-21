@@ -4,8 +4,6 @@ import assert, {ok} from "node:assert";
 
 
 const FilesAPI = {
-    all: async () =>
-        await (await fetch(`/api/files`)).json(),
     get: async (page: number, size: number, accessToken: string) =>
         await (await fetch(`/api/files/pg?page=${page}&page_size=${size}`, {
             headers: {
@@ -25,7 +23,6 @@ const FilesAPI = {
 }
 
 export const Files = () => {
-    const [files, setFiles] = useState<FileInfo[]>([])
     const [filespages, setFilesPages] = useState<PaginationResult<Attachment>>()
     const pageSize = 5
     const [page, setPage] = useState<number>(0)
@@ -38,9 +35,8 @@ export const Files = () => {
         if (auth.accessToken) {
             await FilesAPI.create(form, auth.accessToken!)
         }
-        setFiles(await FilesAPI.all())
         if (auth.accessToken) {
-            (await FilesAPI.get(page, pageSize, auth.accessToken))
+            setFilesPages(await FilesAPI.get(page, pageSize, auth.accessToken))
         }
         const el = document.getElementById("file")! as HTMLInputElement
         el.value = ''
@@ -50,7 +46,6 @@ export const Files = () => {
     const deleteFile = async (file: Attachment) => {
         setProcessing(true)
         await FilesAPI.delete(file.id)
-        setFiles(await FilesAPI.all())
         if (auth.accessToken) {
             setFilesPages(await FilesAPI.get(page, pageSize, auth.accessToken))
         }
@@ -59,10 +54,12 @@ export const Files = () => {
 
     useEffect(() => {
         setProcessing(true)
-        FilesAPI.all().then((files) => {
-            setFiles(files)
-            setProcessing(false)
-        })
+        if (auth.accessToken) {
+            FilesAPI.get(page, pageSize, auth.accessToken).then((files) => {
+                setFilesPages(files)
+                setProcessing(false)
+            })
+        }
     }, [])
 
     useEffect(() => {
@@ -83,14 +80,6 @@ export const Files = () => {
         if (page < 0) setPage(0)
         if (numPages != 0 && page >= numPages) setPage(numPages - 1)
     }, [page, numPages])
-
-    useEffect(() => {
-        console.log(files)
-        console.log("Filespages: ")
-        if (auth.accessToken) {
-            console.log(FilesAPI.get(page, pageSize, auth.accessToken))
-        }
-    }, [files]);
 
     return (
         <div style={{display: 'flex', flexFlow: 'column', textAlign: 'left'}}>
@@ -127,7 +116,6 @@ export const Files = () => {
                         disabled={processing || !auth.isAuthenticated || !auth.session}
                         style={{height: '40px'}}
                         onClick={() => {
-                            // ok(auth.isAuthenticated && auth.session)
                             const form = new FormData()
                             const el = document.getElementById("file")! as HTMLInputElement
                             form.append("file", el.files![0])
