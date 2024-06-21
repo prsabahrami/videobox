@@ -31,7 +31,7 @@ const App = () => {
         </div>
         <div style={{ display: 'flex' }}>
           {/* CRA: right-aligned nav buttons */}
-          { auth.isAuthenticated && <a className="NavButton" onClick={() => auth.logout()}>Logout</a> }
+          { auth.isAuthenticated && <a className="NavButton" onClick={() => { auth.logout(); navigate('/'); }}>Logout</a> }
           { !auth.isAuthenticated && <a className="NavButton" onClick={() => navigate('/login')}>Login/Register</a> }
         </div>
       </div>
