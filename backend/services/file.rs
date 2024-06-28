@@ -8,8 +8,10 @@ use futures_util::StreamExt as _;
 use log::debug;
 use crate::services::attachments::Attachment as AttachmentModel;
 
+
 #[derive(Serialize)]
 #[tsync::tsync]
+#[allow(dead_code)]
 struct FileInfo {
     pub id: i32,
     pub key: String,
@@ -45,11 +47,14 @@ async fn index(
 }
 
 #[actix_web::delete("/{id}")]
-async fn delete(db: Data<Database>, storage: Data<Storage>, file_id: Path<i32>) -> HttpResponse {
+async fn delete(db: Data<Database>, storage: Data<Storage>, file_id: Path<i32>, auth: BearerAuth) -> HttpResponse {
     let mut db = db.get_connection().unwrap();
     let file_id = file_id.into_inner();
 
-    let detach_op = Attachment::detach(&mut db, &storage, file_id).await;
+    let token = auth.token();
+    let user_id = get_user(token.parse().unwrap());
+
+    let detach_op = Attachment::detach(&mut db, &storage, file_id, user_id.unwrap()).await;
 
     if detach_op.is_err() {
         return HttpResponse::InternalServerError().json(detach_op.err().unwrap());
@@ -86,8 +91,8 @@ async fn create(db: Data<Database>, store: Data<Storage>, mut payload: Multipart
                 }
 
                 let attached_req = Attachment::attach(&mut db, &store, user_id.unwrap(), file_name.clone().unwrap(), "NULL".to_string(), 0, AttachmentData {
-                    data,
-                    file_name
+                    data: data.clone(),
+                    file_name: file_name.clone(),
                 }, true, false).await;
 
                 if attached_req.is_err() {

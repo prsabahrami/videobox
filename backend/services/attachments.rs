@@ -22,6 +22,20 @@ pub struct Attachment {
 }
 
 #[tsync::tsync]
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Identifiable, Selectable)]
+#[diesel(table_name=attachment_blobs, primary_key(id))]
+pub struct AttachmentBlob {
+    pub id: i32,
+    pub key: String,
+    pub file_name: String,
+    pub content_type: Option<String>,
+    pub byte_size: i64,
+    pub checksum: String,
+    pub service_name: String,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+}
+
+#[tsync::tsync]
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
 #[diesel(table_name=attachments)]
 pub struct CreateAttachment {
@@ -70,21 +84,29 @@ impl Attachment {
     }
 
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut Connection, page: i64, page_size: i64, user_id_input: ID) -> QueryResult<PaginationResult<Self>> {
+    pub fn paginate(db: &mut Connection, page: i64, page_size: i64, user_id_input: ID) -> QueryResult<(Vec<String>, PaginationResult<Self>)> {
         use crate::schema::attachments::dsl::*;
+        use crate::schema::attachment_blobs::dsl::{attachment_blobs, id as ids};
 
         let page_size = if page_size < 1 { 1 } else { page_size };
         let total_items = attachments.count().get_result(db)?;
         let items = attachments.filter(user_id.eq(user_id_input)).limit(page_size).offset(page * page_size).load::<Self>(db)?;
+        let mut urls: Vec<String> = Vec::new();
+        for item in &items {
+            let file_key = attachment_blobs.filter(ids.eq(item.blob_id)).first::<AttachmentBlob>(db)?.key;
+            // add user id to the file key
+            let url = format!("{}/{}", std::env::var("CLOUDFRONT_URL").unwrap(), file_key);
+            urls.push(url);
+        }
 
-        Ok(PaginationResult {
+        Ok((urls, PaginationResult {
             items,
             total_items,
             page,
             page_size,
             /* ceiling division of integers */
             num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
-        })
+        }))
     }
 
     pub fn update(db: &mut Connection, param_id: i32, item: &UpdateAttachment) -> QueryResult<Self> {
