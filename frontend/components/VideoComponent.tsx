@@ -1,22 +1,32 @@
 import React, { useEffect, useRef } from 'react';
 
-export default function VideoComponent({ url }: { url: string }) {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+interface VideoComponentProps {
+  url: string;
+  startTime?: number;
+}
+
+const VideoComponent: React.FC<VideoComponentProps> = ({ url, startTime }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (iframeRef.current) {
-      iframeRef.current.setAttribute('controlsList', 'nodownload');
+    if (videoRef.current && startTime) {
+      videoRef.current.currentTime = startTime;
     }
-  }, []);
+  }, [url, startTime]);
 
   return (
-    <iframe
-      ref={iframeRef}
-      src={url}
-      frameBorder="0"
-      allowFullScreen
-      allow="fullscreen"
-      sandbox="allow-scripts allow-same-origin"
-    />
+    <video 
+      ref={videoRef} 
+      controls 
+      width="100%" 
+      onLoadedMetadata={() => console.log('Video metadata loaded')}
+      controlsList='nodownload'
+      onContextMenu={e => e.preventDefault()}
+    >
+      <source src={url} type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
   );
-}
+};
+
+export default VideoComponent;
