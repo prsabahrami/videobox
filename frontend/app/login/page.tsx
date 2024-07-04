@@ -135,11 +135,15 @@ export const LoginPage = () => {
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [processing, setProcessing] = useState<boolean>(false)
+  const [error, setError] = useState<string>('')
 
   const login = async () => {
     setProcessing(true)
-    await auth.login(email, password)
+    let res = await auth.login(email, password)
     setProcessing(false)
+    if (!res) {
+      setError('Invalid email or password')
+    }
   }
 
   if (auth.isAuthenticated) {
@@ -168,6 +172,7 @@ export const LoginPage = () => {
           }}
         >
           <SubmitButton>Sign in</SubmitButton>
+          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
           {/* @ts-ignore */}
           <GoogleAuthButton />
           <p className="text-center text-sm text-gray-600 mt-4">

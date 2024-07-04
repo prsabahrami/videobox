@@ -83,6 +83,19 @@ impl Attachment {
         attachments.filter(id.eq(param_id)).first::<Self>(db)
     }
 
+    pub fn read_id(db: &mut Connection, param_id: i32) -> QueryResult<String> {
+        use crate::schema::attachment_blobs::dsl::{attachment_blobs, id as blob_id, key};
+
+        let file_key = attachment_blobs
+            .filter(blob_id.eq(param_id))
+            .select(key)
+            .first::<String>(db)?;
+
+        let url = format!("{}/{}", std::env::var("CLOUDFRONT_URL").unwrap(), file_key);
+
+        Ok(url)
+    }
+    
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
     pub fn paginate(db: &mut Connection, page: i64, page_size: i64, user_id_input: ID) -> QueryResult<(Vec<String>, PaginationResult<Self>)> {
         use crate::schema::attachments::dsl::*;
