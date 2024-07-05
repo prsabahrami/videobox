@@ -2,35 +2,110 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import VideoComponent from '../../components/VideoComponent'
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, Button } from '@headlessui/react'
   
-const FilesAPI = {
-    getPage: async (page: number, size: number, accessToken: string) =>
+interface Videos {
+  urls: string[]
+  info: PaginationResult<Attachment>
+}
+
+interface Video {
+  url: string
+  info: Attachment
+}
+
+interface ShareVideoRequest {
+  video_id: number
+  shared_with: string
+  start_time: number | null
+  expires_at: string | null
+}
+
+const VideosAPI = {
+    getVideos: async (page: number, size: number, accessToken: string) =>
         await (await fetch(`/api/files/pg?page=${page}&page_size=${size}`, {
             headers: {
                 Authorization: `Bearer ${accessToken}`
             }
         })).json(),
-    delete: async (id: number, accessToken: string) =>
+    deleteVideo: async (id: number, accessToken: string) =>
         await fetch(`/api/files/${id}`, { 
             method: 'DELETE',
             headers: {
                 Authorization: `Bearer ${accessToken}`
             }
-         })
+         }),
+    shareVideo: async (accessToken: string, shareData: ShareVideoRequest): Promise<{ share_token: string }> => {
+          return (await fetch('/api/files/share', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`
+            },
+            body: JSON.stringify(shareData)
+          })).json()
+        }
 }
 
 export default function Videos() {
-    const [filespages, setFilesPages] = useState<[string[], PaginationResult<Attachment>] | null>(null)
+    const [videos, setVideos] = useState<Videos | null>(null)
     const pageSize = 4
     const [page, setPage] = useState<number>(0)
     const [numPages, setPages] = useState<number>(1)
     const [processing, setProcessing] = useState<boolean>(false)
+    const [open, setOpen] = useState(true)
+    const [selectedVideo, setSelectedVideo] = useState<Video | null>(null)
+    const [sharedWithEmail, setSharedWithEmail] = useState('')
+    const [startDateTime, setStartDateTime] = useState('')
+    const [expirationDateTime, setExpirationDateTime] = useState('')
+    const [shareLink, setShareLink] = useState('')
 
     const auth = useAuth()
 
     useEffect(() => {
+      if (auth.accessToken) {
+        VideosAPI.getVideos(page, pageSize, auth.accessToken)
+          .then(setVideos)
+          .catch(console.error)
+      }
+    }, [auth.accessToken])
+
+    const openShareModal = (video: Video) => {
+      setSelectedVideo(video)
+      setOpen(true)
+    }
+  
+    const closeShareModal = () => {
+      setOpen(false)
+      setSelectedVideo(null)
+      setSharedWithEmail('')
+      setStartDateTime('')
+      setExpirationDateTime('')
+      setShareLink('')
+    }
+  
+    const handleShare = async () => {
+      if (!selectedVideo || !auth.accessToken) return
+  
+      try {
+        const shareData: ShareVideoRequest = {
+          video_id: selectedVideo.info.id,
+          shared_with: sharedWithEmail,
+          start_time: startDateTime ? parseFloat(startDateTime) : null,
+          expires_at: expirationDateTime ? expirationDateTime : null
+        }
+  
+        const response = await VideosAPI.shareVideo(auth.accessToken, shareData)
+        setShareLink(`${window.location.origin}/shared/${response.share_token}`)
+      } catch (error) {
+        console.error('Error sharing video:', error)
+      }
+    }
+
+    
+    useEffect(() => {
         if (auth.accessToken) {
-            FilesAPI.getPage(page, pageSize, auth.accessToken).then(setFilesPages)
+            VideosAPI.getVideos(page, pageSize, auth.accessToken).then(setVideos)
         }
     }, [page, pageSize, auth.accessToken])
 
@@ -44,12 +119,105 @@ export default function Videos() {
             </p>
           </div>
           <div className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 border-t border-gray-200 pt-10 sm:mt-16 sm:pt-16 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-            {!filespages && <p>You don't have any videos yet.</p>}
-            {filespages && filespages[0] && filespages[0].map((url: string) => (
-              <VideoComponent url={url} />
+            {!videos && <p>You don't have any videos yet.</p>}
+            {videos && videos.urls.map((url, index) => (
+              <div key={videos.info.items[index].id}>
+                <VideoComponent url={url} />
+                <Button className="inline-flex items-center gap-2 rounded-md bg-gray-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white" onClick={() => setOpen(true)}>Share</Button>
+              </div>
             ))}
           </div>
         </div>
+        
+      
+      <Dialog open={open} onClose={() => setOpen(false)} className="relative z-10">
+        <DialogBackdrop
+          transition
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"
+        />
+
+        <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <DialogPanel
+              transition
+              className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all data-[closed]:translate-y-4 data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in sm:my-8 sm:w-full sm:max-w-lg data-[closed]:sm:translate-y-0 data-[closed]:sm:scale-95"
+            >
+              <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                    <DialogTitle as="h3" className="text-lg font-semibold leading-6 text-gray-900">
+                      Share Video
+                    </DialogTitle>
+                    <div className="mt-2">
+                      <form onSubmit={(e) => { e.preventDefault(); handleShare(); }}>
+                        <div className="mb-4">
+                          <label htmlFor="sharedWithEmail" className="block text-sm font-medium text-gray-700">Share with Email</label>
+                          <input
+                            type="email"
+                            id="sharedWithEmail"
+                            value={sharedWithEmail}
+                            onChange={(e) => setSharedWithEmail(e.target.value)}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                            required
+                          />
+                        </div>
+                        <div className="mb-4">
+                          <label htmlFor="startDateTime" className="block text-sm font-medium text-gray-700">Start Date and Time</label>
+                          <input
+                            type="datetime-local"
+                            id="startDateTime"
+                            value={startDateTime}
+                            onChange={(e) => setStartDateTime(e.target.value)}
+                            className="text-black mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                          />
+                        </div>
+                        <div className="mb-4">
+                          <label htmlFor="expirationDateTime" className="block text-sm font-medium text-gray-700">Expiration Date and Time</label>
+                          <input
+                            type="datetime-local"
+                            id="expirationDateTime"
+                            value={expirationDateTime}
+                            onChange={(e) => setExpirationDateTime(e.target.value)}
+                            className="text-black mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                          />
+                        </div>
+                        <div className="mt-4">
+                          <button
+                            type="submit"
+                            className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                          >
+                            Share Video
+                          </button>
+                        </div>
+                      </form>
+                      {shareLink && (
+                        <div className="mt-4">
+                          <p className="text-sm text-gray-500">Share this link:</p>
+                          <input
+                            type="text"
+                            value={shareLink}
+                            readOnly
+                            className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                >
+                  Close
+                </button>
+              </div>
+            </DialogPanel>
+          </div>
+        </div>
+      </Dialog>
       </div>
     )
   }

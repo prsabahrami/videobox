@@ -69,6 +69,13 @@ pub struct PaginationResult<T> {
     pub num_pages: i64,
 }
 
+#[tsync::tsync]
+#[derive(Debug, Serialize)]
+pub struct Videos {
+    pub urls: Vec<String>,
+    pub info: PaginationResult<Attachment>,
+}
+
 impl Attachment {
 
     pub fn create(db: &mut Connection, item: &CreateAttachment) -> QueryResult<Self> {
@@ -97,7 +104,7 @@ impl Attachment {
     }
     
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut Connection, page: i64, page_size: i64, user_id_input: ID) -> QueryResult<(Vec<String>, PaginationResult<Self>)> {
+    pub fn paginate(db: &mut Connection, page: i64, page_size: i64, user_id_input: ID) -> QueryResult<Videos> {
         use crate::schema::attachments::dsl::*;
         use crate::schema::attachment_blobs::dsl::{attachment_blobs, id as ids};
 
@@ -112,14 +119,19 @@ impl Attachment {
             urls.push(url);
         }
 
-        Ok((urls, PaginationResult {
-            items,
-            total_items,
-            page,
-            page_size,
-            /* ceiling division of integers */
-            num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
-        }))
+
+        let videos: Videos = Videos {
+            urls,
+            info: PaginationResult {
+                items,
+                total_items,
+                page,
+                page_size,
+                num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
+            }
+        };
+
+        Ok(videos)
     }
 
     pub fn update(db: &mut Connection, param_id: i32, item: &UpdateAttachment) -> QueryResult<Self> {

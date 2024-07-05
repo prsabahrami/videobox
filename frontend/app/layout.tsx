@@ -4,6 +4,8 @@ import React from 'react'
 import './global.css'
 import Navbar from './navbar'
 
+
+
 export const metadata: Metadata = {
   title: 'Videobox',
   description: 'Videobox offers secure, link-based video sharing without downloads, using Actix/Rust, NextJS, AWS S3, and PostgreSQL. It provides instant streaming specifically tailored for educational use, bypassing the limitations and costs of conventional cloud services.',
@@ -20,7 +22,7 @@ export function AppLayout({
   
   // @ts-ignore
   return (
-    <html lang="en">
+    <html lang="en" className='dark'>
       <body>
         <div className="App">
           {/* CRA: app menu */}
@@ -28,7 +30,7 @@ export function AppLayout({
           <div>
             {children}
           </div>
-        </div>
+        </div> 
       </body>
     </html>
   )
