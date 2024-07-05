@@ -87,11 +87,26 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    video_shares (id) {
+        id -> Int4,
+        video_id -> Int4,
+        shared_by -> Int4,
+        shared_with -> Int4,
+        share_token -> Uuid,
+        start_time -> Nullable<Timestamptz>,
+        expires_at -> Nullable<Timestamptz>,
+        created_at -> Timestamptz,
+    }
+}
+
 diesel::joinable!(attachments -> users (user_id));
 diesel::joinable!(user_oauth2_links -> users (user_id));
 diesel::joinable!(user_permissions -> users (user_id));
 diesel::joinable!(user_roles -> users (user_id));
 diesel::joinable!(user_sessions -> users (user_id));
+diesel::joinable!(video_shares -> users (shared_with));
+
 
 diesel::allow_tables_to_appear_in_same_query!(
     attachment_blobs,
@@ -102,4 +117,5 @@ diesel::allow_tables_to_appear_in_same_query!(
     user_roles,
     user_sessions,
     users,
+    video_shares,
 );

@@ -36,6 +36,7 @@ pub fn main() {
                 ("user_oauth2_links", TableOptions::default().ignore()),
                 // plugin_tasks
                 ("fang_tasks", TableOptions::default().ignore()),
+                // ("video_shares", TableOptions::default().ignore()),
             ]),
             model_path: "crate::models::".to_string(),
             schema_path: "crate::schema::".to_string(),

@@ -1,6 +1,6 @@
 use actix_multipart::Multipart;
 use actix_web::{HttpResponse, ResponseError};
-use actix_web::web::{Data, Path, Query};
+use actix_web::web::{Data, Path, Query, Json};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use serde::Serialize;
 use create_rust_app::{auth::controller::get_user, Attachment, AttachmentData, Database, Storage};
@@ -8,7 +8,12 @@ use futures_util::StreamExt as _;
 use log::debug;
 use crate::services::attachments::Attachment as AttachmentModel;
 use uuid::Uuid;
-use chrono::{DateTime, Utc, Duration};
+use chrono::{DateTime, Utc};
+use serde_json::json;
+use diesel::prelude::*;
+use crate::models::video_shares::VideoShare;
+use crate::schema::video_shares;
+use diesel::Insertable;
 
 #[derive(Serialize)]
 #[tsync::tsync]
@@ -38,7 +43,18 @@ pub struct ViewParams {
 pub struct ShareVideoRequest {
     video_id: i32,
     shared_with: i32,
-    start_time: Option<f64>, // in seconds
+    start_time: Option<DateTime<Utc>>,
+    expires_at: Option<DateTime<Utc>>,
+}
+
+#[derive(Insertable)]
+#[table_name = "video_shares"]
+struct NewVideoShare {
+    video_id: i32,
+    shared_by: i32,
+    shared_with: i32,
+    share_token: Uuid,
+    start_time: Option<DateTime<Utc>>,
     expires_at: Option<DateTime<Utc>>,
 }
 
@@ -63,7 +79,7 @@ async fn index(
 }
 
 #[actix_web::get("/view")]
-async fn view(db: Data<Database>, Query(info): Query<ViewParams>, auth: BearerAuth) -> HttpResponse {
+async fn view(db: Data<Database>, Query(info): Query<ViewParams>, _auth: BearerAuth) -> HttpResponse {
     let mut con = db.get_connection().unwrap();
     let result = AttachmentModel::read_id(&mut con, info.id);
 
@@ -140,24 +156,27 @@ async fn create(db: Data<Database>, store: Data<Storage>, mut payload: Multipart
 async fn share_video(
     db: Data<Database>,
     auth: BearerAuth,
-    share_req: web::Json<ShareVideoRequest>,
+    share_req: Json<ShareVideoRequest>,
 ) -> HttpResponse {
+    use crate::schema::video_shares;
+
     let mut con = db.get_connection().unwrap();
     let user_id = get_user(auth.token().parse().unwrap()).unwrap();
     
     let share_token = Uuid::new_v4();
-    let start_time = share_req.start_time.map(|s| Duration::seconds(s as i64));
-    
+
+    let new_share = NewVideoShare {
+        video_id: share_req.video_id,
+        shared_by: user_id,
+        shared_with: share_req.shared_with,
+        share_token,
+        start_time: share_req.start_time,
+        expires_at: share_req.expires_at,
+    };
+
     let result = diesel::insert_into(video_shares::table)
-        .values((
-            video_shares::video_id.eq(share_req.video_id),
-            video_shares::shared_by.eq(user_id),
-            video_shares::shared_with.eq(share_req.shared_with),
-            video_shares::share_token.eq(share_token),
-            video_shares::start_time.eq(start_time),
-            video_shares::expires_at.eq(share_req.expires_at),
-        ))
-        .execute(&mut con);
+        .values(&new_share)
+        .get_result::<VideoShare>(&mut con);
 
     match result {
         Ok(_) => HttpResponse::Ok().json(json!({ "share_token": share_token })),
@@ -168,8 +187,10 @@ async fn share_video(
 #[actix_web::get("/shared/{token}")]
 async fn get_shared_video(
     db: Data<Database>,
-    token: web::Path<Uuid>,
+    token: Path<Uuid>,
 ) -> HttpResponse {
+    use crate::schema::video_shares;
+
     let mut con = db.get_connection().unwrap();
     
     let share = video_shares::table
@@ -182,7 +203,7 @@ async fn get_shared_video(
             let video = AttachmentModel::read_id(&mut con, share.video_id).unwrap();
             HttpResponse::Ok().json(json!({
                 "video": video,
-                "start_time": share.start_time.map(|d| d.num_seconds()),
+                "start_time": share.start_time,
                 "shared_by": share.shared_by,
                 "shared_with": share.shared_with
             }))
