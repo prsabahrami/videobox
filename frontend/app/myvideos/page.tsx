@@ -17,8 +17,8 @@ interface Video {
 interface ShareVideoRequest {
   video_id: number
   shared_with: string
-  start_time: number | null
-  expires_at: string | null
+  starts: string // ISO 8601 datetime string
+  expires: string // ISO 8601 datetime string
 }
 
 const VideosAPI = {
@@ -53,12 +53,13 @@ export default function Videos() {
     const [page, setPage] = useState<number>(0)
     const [numPages, setPages] = useState<number>(1)
     const [processing, setProcessing] = useState<boolean>(false)
-    const [open, setOpen] = useState(true)
+    const [open, setOpen] = useState(false)
     const [selectedVideo, setSelectedVideo] = useState<Video | null>(null)
     const [sharedWithEmail, setSharedWithEmail] = useState('')
     const [startDateTime, setStartDateTime] = useState('')
     const [expirationDateTime, setExpirationDateTime] = useState('')
     const [shareLink, setShareLink] = useState('')
+    const [successfulShare, setSuccessfulShare] = useState<boolean | null>(null)
 
     const auth = useAuth()
 
@@ -82,6 +83,7 @@ export default function Videos() {
       setStartDateTime('')
       setExpirationDateTime('')
       setShareLink('')
+      setSuccessfulShare(null)
     }
   
     const handleShare = async () => {
@@ -91,15 +93,18 @@ export default function Videos() {
         const shareData: ShareVideoRequest = {
           video_id: selectedVideo.info.id,
           shared_with: sharedWithEmail,
-          start_time: startDateTime ? parseFloat(startDateTime) : null,
-          expires_at: expirationDateTime ? expirationDateTime : null
+          starts: startDateTime,
+          expires: expirationDateTime
         }
   
         const response = await VideosAPI.shareVideo(auth.accessToken, shareData)
-        setShareLink(`${window.location.origin}/shared/${response.share_token}`)
+        setShareLink(`${window.location.origin}/view/${response.share_token}`)
+        setSuccessfulShare(true)
       } catch (error) {
         console.error('Error sharing video:', error)
+        setSuccessfulShare(false)
       }
+      
     }
 
     
@@ -123,14 +128,21 @@ export default function Videos() {
             {videos && videos.urls.map((url, index) => (
               <div key={videos.info.items[index].id}>
                 <VideoComponent url={url} />
-                <Button className="inline-flex items-center gap-2 rounded-md bg-gray-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white" onClick={() => setOpen(true)}>Share</Button>
+                <Button className="inline-flex items-center gap-2 rounded-md bg-gray-7000 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[open]:bg-gray-700 data-[focus]:outline-1
+                 data-[focus]:outline-white" onClick={() => { 
+                  let video = {
+                    url: url,
+                    info: videos.info.items[index]
+                  };
+                  openShareModal(video)
+                 }}>Share</Button>
               </div>
             ))}
           </div>
         </div>
         
       
-      <Dialog open={open} onClose={() => setOpen(false)} className="relative z-10">
+      <Dialog open={open} onClose={() => closeShareModal()} className="relative z-10">
         <DialogBackdrop
           transition
           className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"
@@ -157,7 +169,7 @@ export default function Videos() {
                             id="sharedWithEmail"
                             value={sharedWithEmail}
                             onChange={(e) => setSharedWithEmail(e.target.value)}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                            className="text-black mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                             required
                           />
                         </div>
@@ -185,9 +197,16 @@ export default function Videos() {
                           <button
                             type="submit"
                             className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                            onClick={() => handleShare()}
                           >
                             Share Video
                           </button>
+                          {successfulShare === false && <p className="mt-2 text-red-500">Error sharing video. Please try again.</p>} 
+                          {successfulShare === true &&
+                          <>
+                          <p className="mt-2 text-green-500">Video shared successfully.</p> 
+                          </>
+                          } 
                         </div>
                       </form>
                       {shareLink && (
@@ -208,7 +227,7 @@ export default function Videos() {
               <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                 <button
                   type="button"
-                  onClick={() => setOpen(false)}
+                  onClick={() => closeShareModal()}
                   className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
                 >
                   Close
