@@ -4,7 +4,7 @@ CREATE TABLE video_shares (
     shared_by INTEGER NOT NULL REFERENCES users(id),
     shared_with TEXT NOT NULL,
     share_token UUID NOT NULL UNIQUE,
-    start_time TIMESTAMP WITH TIME ZONE,
-    expires_at TIMESTAMP WITH TIME ZONE,
+    starts TIMESTAMP WITH TIME ZONE,
+    expires TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

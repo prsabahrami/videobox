@@ -17,8 +17,8 @@ interface Video {
 interface ShareVideoRequest {
   video_id: number
   shared_with: string
-  starts: string // ISO 8601 datetime string
-  expires: string // ISO 8601 datetime string
+  starts: string
+  expires: string
 }
 
 const VideosAPI = {
@@ -56,8 +56,8 @@ export default function Videos() {
     const [open, setOpen] = useState(false)
     const [selectedVideo, setSelectedVideo] = useState<Video | null>(null)
     const [sharedWithEmail, setSharedWithEmail] = useState('')
-    const [startDateTime, setStartDateTime] = useState('')
-    const [expirationDateTime, setExpirationDateTime] = useState('')
+    const [startDateTime, setStartDateTime] = useState<string>('')
+    const [expirationDateTime, setExpirationDateTime] = useState<string>('')
     const [shareLink, setShareLink] = useState('')
     const [successfulShare, setSuccessfulShare] = useState<boolean | null>(null)
 
@@ -87,14 +87,42 @@ export default function Videos() {
     }
   
     const handleShare = async () => {
-      if (!selectedVideo || !auth.accessToken) return
-  
+      if (!selectedVideo || !auth.accessToken || !sharedWithEmail) return
+      
       try {
+
+        const formattedStartDateTime = new Date(startDateTime).toLocaleString('en-US', { 
+          year: 'numeric', 
+          month: '2-digit', 
+          day: '2-digit', 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit',
+          fractionalSecondDigits: 3,
+          hour12: false,
+          timeZone: 'America/New_York'
+        }).replace(',', '').replace(/(\d+)\/(\d+)\/(\d+)/, '$3-$1-$2') + ' -0400';
+
+        const formattedExpirationDateTime = new Date(expirationDateTime).toLocaleString('en-US', { 
+          year: 'numeric', 
+          month: '2-digit', 
+          day: '2-digit', 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit',
+          fractionalSecondDigits: 3,
+          hour12: false,
+          timeZone: 'America/New_York'
+        }).replace(',', '').replace(/(\d+)\/(\d+)\/(\d+)/, '$3-$1-$2') + ' -0400';
+
+        console.log("formattedStartDateTime", formattedStartDateTime)
+        console.log("formattedExpirationDateTime", formattedExpirationDateTime)
+
         const shareData: ShareVideoRequest = {
           video_id: selectedVideo.info.id,
           shared_with: sharedWithEmail,
-          starts: startDateTime,
-          expires: expirationDateTime
+          starts: formattedStartDateTime,
+          expires: formattedExpirationDateTime
         }
   
         const response = await VideosAPI.shareVideo(auth.accessToken, shareData)
@@ -179,8 +207,10 @@ export default function Videos() {
                             type="datetime-local"
                             id="startDateTime"
                             value={startDateTime}
-                            onChange={(e) => setStartDateTime(e.target.value)}
-                            className="text-black mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                            onChange={(e) => {
+                              setStartDateTime(e.target.value);
+                            }}
+                            className="text-black mt-1 block w-full rounded-md border-gray-3000 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                           />
                         </div>
                         <div className="mb-4">
@@ -189,23 +219,23 @@ export default function Videos() {
                             type="datetime-local"
                             id="expirationDateTime"
                             value={expirationDateTime}
-                            onChange={(e) => setExpirationDateTime(e.target.value)}
-                            className="text-black mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                            onChange={(e) => {
+                              setExpirationDateTime(e.target.value);
+                            }}
+                            className="text-black mt-1 block w-full rounded-md border-gray-30 shadow-sm focus:border-indigo-30 focus:ring focus:ring-indigo-20 focus:ring-opacity-50"
                           />
+                          {expirationDateTime && startDateTime && expirationDateTime < startDateTime && <p className="mt-2 text-red-500">Expiration date and time must be greater than start date and time.</p>}
                         </div>
                         <div className="mt-4">
                           <button
                             type="submit"
                             className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                            onClick={() => handleShare()}
                           >
                             Share Video
                           </button>
                           {successfulShare === false && <p className="mt-2 text-red-500">Error sharing video. Please try again.</p>} 
                           {successfulShare === true &&
-                          <>
-                          <p className="mt-2 text-green-500">Video shared successfully.</p> 
-                          </>
+                            <p className="mt-2 text-green-500">Video shared successfully.</p> 
                           } 
                         </div>
                       </form>
@@ -216,7 +246,7 @@ export default function Videos() {
                             type="text"
                             value={shareLink}
                             readOnly
-                            className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                            className="text-black mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                           />
                         </div>
                       )}

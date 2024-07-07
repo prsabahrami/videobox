@@ -18,8 +18,8 @@ pub struct VideoShare {
     pub shared_by: i32,
     pub shared_with: String,
     pub share_token: uuid::Uuid,
-    pub start_time: Option<chrono::DateTime<chrono::Utc>>,
-    pub expires_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub starts: Option<chrono::DateTime<chrono::Utc>>,
+    pub expires: Option<chrono::DateTime<chrono::Utc>>,
     pub created_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
@@ -31,8 +31,8 @@ pub struct CreateVideoShare {
     pub shared_by: i32,
     pub shared_with: String,
     pub share_token: uuid::Uuid,
-    pub start_time: Option<chrono::DateTime<chrono::Utc>>,
-    pub expires_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub starts: Option<chrono::DateTime<chrono::Utc>>,
+    pub expires: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 #[tsync::tsync]
@@ -43,8 +43,8 @@ pub struct UpdateVideoShare {
     pub shared_by: Option<i32>,
     pub shared_with: Option<String>,
     pub share_token: Option<uuid::Uuid>,
-    pub start_time: Option<Option<chrono::DateTime<chrono::Utc>>>,
-    pub expires_at: Option<Option<chrono::DateTime<chrono::Utc>>>,
+    pub starts: Option<Option<chrono::DateTime<chrono::Utc>>>,
+    pub expires: Option<Option<chrono::DateTime<chrono::Utc>>>,
     pub created_at: Option<Option<chrono::DateTime<chrono::Utc>>>,
 }
 

@@ -94,8 +94,8 @@ diesel::table! {
         shared_by -> Int4,
         shared_with -> Text,
         share_token -> Uuid,
-        start_time -> Nullable<Timestamptz>,
-        expires_at -> Nullable<Timestamptz>,
+        starts -> Nullable<Timestamptz>,
+        expires -> Nullable<Timestamptz>,
         created_at -> Nullable<Timestamptz>,
     }
 }
