@@ -2,19 +2,16 @@ use actix_multipart::Multipart;
 use actix_web::{HttpResponse, ResponseError};
 use actix_web::web::{Data, Path, Query, Json};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
-use serde::Serialize;
 use create_rust_app::{auth::controller::get_user, Attachment, AttachmentData, Database, Storage};
 use futures_util::StreamExt as _;
 use log::debug;
 use crate::services::attachments::Attachment as AttachmentModel;
 use uuid::Uuid;
-use chrono::{DateTime, Utc, FixedOffset};
+use chrono::{DateTime, FixedOffset};
 use serde_json::json;
 use diesel::prelude::*;
 use crate::models::video_shares::VideoShare;
-use crate::models::users::User;
 use crate::schema::video_shares;
-use crate::schema::users;
 use diesel::Insertable;
 
 #[tsync::tsync]
