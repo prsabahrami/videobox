@@ -42,17 +42,17 @@ pub struct ViewParams {
 #[derive(serde::Deserialize)]
 pub struct ShareVideoRequest {
     video_id: i32,
-    shared_with: i32,
+    shared_with: Option<String>,
     start_time: Option<DateTime<Utc>>,
     expires_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Insertable)]
-#[table_name = "video_shares"]
+#[diesel(table_name=video_shares)]
 struct NewVideoShare {
     video_id: i32,
     shared_by: i32,
-    shared_with: i32,
+    shared_with: Option<String>,
     share_token: Uuid,
     start_time: Option<DateTime<Utc>>,
     expires_at: Option<DateTime<Utc>>,
@@ -168,7 +168,7 @@ async fn share_video(
     let new_share = NewVideoShare {
         video_id: share_req.video_id,
         shared_by: user_id,
-        shared_with: share_req.shared_with,
+        shared_with: share_req.shared_with.clone(),
         share_token,
         start_time: share_req.start_time,
         expires_at: share_req.expires_at,
@@ -176,7 +176,9 @@ async fn share_video(
 
     let result = diesel::insert_into(video_shares::table)
         .values(&new_share)
-        .get_result::<VideoShare>(&mut con);
+        .get_result::<VideoShare>(&mut con);    
+
+    debug!("{:?}", result);
 
     match result {
         Ok(_) => HttpResponse::Ok().json(json!({ "share_token": share_token })),
