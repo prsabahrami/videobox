@@ -8,22 +8,14 @@ use futures_util::StreamExt as _;
 use log::debug;
 use crate::services::attachments::Attachment as AttachmentModel;
 use uuid::Uuid;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Utc, FixedOffset};
 use serde_json::json;
 use diesel::prelude::*;
 use crate::models::video_shares::VideoShare;
+use crate::models::users::User;
 use crate::schema::video_shares;
+use crate::schema::users;
 use diesel::Insertable;
-
-#[derive(Serialize)]
-#[tsync::tsync]
-#[allow(dead_code)]
-struct FileInfo {
-    pub id: i32,
-    pub key: String,
-    pub name: String,
-    pub url: Option<String>,
-}
 
 #[tsync::tsync]
 #[derive(serde::Deserialize)]
@@ -39,12 +31,12 @@ pub struct ViewParams {
 }
 
 #[tsync::tsync]
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct ShareVideoRequest {
     video_id: i32,
     shared_with: Option<String>,
-    start_time: Option<DateTime<Utc>>,
-    expires_at: Option<DateTime<Utc>>,
+    starts: Option<DateTime<FixedOffset>>,
+    expires: Option<DateTime<FixedOffset>>,
 }
 
 #[derive(Insertable)]
@@ -54,8 +46,8 @@ struct NewVideoShare {
     shared_by: i32,
     shared_with: Option<String>,
     share_token: Uuid,
-    start_time: Option<DateTime<Utc>>,
-    expires_at: Option<DateTime<Utc>>,
+    starts: Option<DateTime<FixedOffset>>,
+    expires: Option<DateTime<FixedOffset>>,
 }
 
 #[actix_web::get("/pg")]
@@ -158,11 +150,11 @@ async fn share_video(
     auth: BearerAuth,
     share_req: Json<ShareVideoRequest>,
 ) -> HttpResponse {
-    use crate::schema::video_shares;
-
     let mut con = db.get_connection().unwrap();
     let user_id = get_user(auth.token().parse().unwrap()).unwrap();
     
+    debug!("Share Request: {:?}", share_req);
+
     let share_token = Uuid::new_v4();
 
     let new_share = NewVideoShare {
@@ -170,15 +162,16 @@ async fn share_video(
         shared_by: user_id,
         shared_with: share_req.shared_with.clone(),
         share_token,
-        start_time: share_req.start_time,
-        expires_at: share_req.expires_at,
+        starts: share_req.starts.clone(),
+        expires: share_req.expires.clone(),
     };
 
     let result = diesel::insert_into(video_shares::table)
         .values(&new_share)
         .get_result::<VideoShare>(&mut con);    
 
-    debug!("{:?}", result);
+    debug!("Start At: {:?}", share_req.starts);
+    debug!("Expires At: {:?}", share_req.expires);
 
     match result {
         Ok(_) => HttpResponse::Ok().json(json!({ "share_token": share_token })),
@@ -186,33 +179,43 @@ async fn share_video(
     }
 }
 
-#[actix_web::get("/shared/{token}")]
-async fn get_shared_video(
-    db: Data<Database>,
-    token: Path<Uuid>,
-) -> HttpResponse {
-    use crate::schema::video_shares;
+// #[actix_web::get("/shared/{token}")]
+// async fn get_shared_video(
+//     db: Data<Database>,
+//     token: Path<Uuid>,
+// ) -> HttpResponse {
+//     use crate::schema::video_shares;
+//     use crate::schema::users;
 
-    let mut con = db.get_connection().unwrap();
+//     let mut con = db.get_connection().unwrap();
     
-    let share = video_shares::table
-        .filter(video_shares::share_token.eq(token.into_inner()))
-        .filter(video_shares::expires_at.gt(Utc::now()).or(video_shares::expires_at.is_null()))
-        .first::<VideoShare>(&mut con);
+//     let share = video_shares::table
+//         .filter(video_shares::share_token.eq(token.into_inner()))
+//         .filter(video_shares::expires_at.gt(Utc::now()).or(video_shares::expires_at.is_null()))
+//         .filter(video_shares::start_time.le(Utc::now()))
+//         .first::<VideoShare>(&mut con);
 
-    match share {
-        Ok(share) => {
-            let video = AttachmentModel::read_id(&mut con, share.video_id).unwrap();
-            HttpResponse::Ok().json(json!({
-                "video": video,
-                "start_time": share.start_time,
-                "shared_by": share.shared_by,
-                "shared_with": share.shared_with
-            }))
-        },
-        Err(_) => HttpResponse::NotFound().finish(),
-    }
-}
+//     let user = users::table
+//         .filter(users::id.eq(share.unwrap().shared_by))
+//         .first::<User>(&mut con);
+
+//     if share.unwrap().shared_with != user.unwrap().email {
+//         return HttpResponse::Forbidden().finish();
+//     }
+
+//     match share {
+//         Ok(share) => {
+//             let video = AttachmentModel::read_id(&mut con, share.video_id).unwrap();
+//             HttpResponse::Ok().json(json!({
+//                 "video": video,
+//                 "start_time": share.start_time,
+//                 "shared_by": share.shared_by,
+//                 "shared_with": share.shared_with
+//             }))
+//         },
+//         Err(_) => HttpResponse::NotFound().finish(),
+//     }
+// }
 
 pub fn endpoints(scope: actix_web::Scope) -> actix_web::Scope {
     return scope
@@ -221,5 +224,5 @@ pub fn endpoints(scope: actix_web::Scope) -> actix_web::Scope {
         .service(index)
         .service(view)
         .service(share_video)
-        .service(get_shared_video);
+        // .service(get_shared_video);
 }

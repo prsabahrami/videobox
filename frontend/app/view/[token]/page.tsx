@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation'
 import VideoComponent from '../../../components/VideoComponent'
 
 const VideoAPI = {
-  getVideo: async (id: string, accessToken: string): Promise<string> => {
-    return (await fetch(`/api/files/view?id=${id}`, {
+  getShared: async (share_token: string, accessToken: string): Promise<string> => {
+    return (await fetch(`/api/shared/${share_token}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`
       },
@@ -26,8 +26,12 @@ export default function VideoPage({ params }: { params: { id: string } }) {
     if (!auth.isAuthenticated) {
       router.push('/login');
     } else if (auth.accessToken) {
+      
+
+
+      
       setIsLoading(true);
-      VideoAPI.getVideo(params.id, auth.accessToken)
+      VideoAPI.getShared(params.id, auth.accessToken)
         .then(url => {
           console.log('Received video URL:', url);
           setVideoURL(url);
