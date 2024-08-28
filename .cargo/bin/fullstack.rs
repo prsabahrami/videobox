@@ -1,6 +1,3 @@
-mod dsync;
-mod tsync;
-
 pub fn main() {
     if !create_rust_app::net::is_port_free(21012) {
         println!("========================================================");
@@ -11,9 +8,6 @@ pub fn main() {
     }
 
     let project_dir = env!("CARGO_MANIFEST_DIR");
-
-    dsync::main();
-    tsync::main();
 
     create_rust_app::dev::run_server(project_dir);
 }

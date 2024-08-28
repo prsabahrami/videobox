@@ -3,38 +3,46 @@ use actix_web::{HttpResponse, ResponseError};
 use actix_web::web::{Data, Path, Query, Json};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use create_rust_app::{auth::controller::get_user, Attachment, AttachmentData, Database, Storage};
+use ffmpeg_next::codec::traits::Encoder;
 use futures_util::StreamExt as _;
 use log::debug;
-use crate::services::attachments::Attachment as AttachmentModel;
+use tokio::process::Command;
+use crate::models::videos::Video as VideoModel;
 use uuid::Uuid;
-use chrono::{DateTime, FixedOffset};
-use serde_json::json;
+use chrono::{DateTime, Utc};
+use serde_json::{json, Value};
 use diesel::prelude::*;
 use crate::models::video_shares::VideoShare;
 use crate::schema::video_shares;
 use diesel::Insertable;
+use ffmpeg_next::{codec, format, frame, media, software, util};
+use reqwest::Client;
+use std::env;
+use std::io::Cursor;
+use std::fs::File;
+use std::io::Write;
+use tempfile::NamedTempFile;
+use tokio::task;
+use futures_util::future::join_all;
 
-#[tsync::tsync]
 #[derive(serde::Deserialize)]
 pub struct PaginationParams {
     pub page: i64,
     pub page_size: i64,
 }
 
-#[tsync::tsync]
 #[derive(serde::Deserialize)]
 pub struct ViewParams {
     pub id: i32,
 }
 
-#[tsync::tsync]
 #[derive(serde::Deserialize, Debug)]
 pub struct ShareVideoRequest {
     video_id: i32,
     shared_with: Option<String>,
-    starts: Option<DateTime<FixedOffset>>,
-    expires: Option<DateTime<FixedOffset>>,
-}
+    starts: Option<DateTime<Utc>>,
+    expires: Option<DateTime<Utc>>,
+} 
 
 #[derive(Insertable)]
 #[diesel(table_name=video_shares)]
@@ -43,8 +51,8 @@ struct NewVideoShare {
     shared_by: i32,
     shared_with: Option<String>,
     share_token: Uuid,
-    starts: Option<DateTime<FixedOffset>>,
-    expires: Option<DateTime<FixedOffset>>,
+    starts: Option<DateTime<Utc>>,
+    expires: Option<DateTime<Utc>>,
 }
 
 #[actix_web::get("/pg")]
@@ -58,7 +66,7 @@ async fn index(
     let token = auth.token();
     let user_id = get_user(token.parse().unwrap());
     
-    let result = AttachmentModel::paginate(&mut con, info.page, info.page_size, user_id.unwrap());
+    let result = VideoModel::paginate(&mut con, info.page, info.page_size, user_id.unwrap());
 
     if result.is_ok() {
         HttpResponse::Ok().json(result.unwrap())
@@ -70,7 +78,7 @@ async fn index(
 #[actix_web::get("/view")]
 async fn view(db: Data<Database>, Query(info): Query<ViewParams>, _auth: BearerAuth) -> HttpResponse {
     let mut con = db.get_connection().unwrap();
-    let result = AttachmentModel::read_id(&mut con, info.id);
+    let result = VideoModel::read_id(&mut con, info.id);
 
     debug!("Hello: {:?}", result);
 
@@ -82,17 +90,17 @@ async fn view(db: Data<Database>, Query(info): Query<ViewParams>, _auth: BearerA
 }
 
 #[actix_web::delete("/{id}")]
-async fn delete(db: Data<Database>, storage: Data<Storage>, file_id: Path<i32>, auth: BearerAuth) -> HttpResponse {
+async fn delete(db: Data<Database>, storage: Data<Storage>, file_id: Path<i32>, auth: BearerAuth) -> HttpResponse { 
     let mut db = db.get_connection().unwrap();
     let file_id = file_id.into_inner();
 
     let token = auth.token();
     let user_id = get_user(token.parse().unwrap());
 
-    let detach_op = Attachment::detach(&mut db, &storage, file_id, user_id.unwrap()).await;
+    let detach_op = VideoModel::delete(&mut db, file_id);
 
-    if detach_op.is_err() {
-        return HttpResponse::InternalServerError().json(detach_op.err().unwrap());
+    if let Err(err) = detach_op {
+        return HttpResponse::InternalServerError().json(json!({ "error": err.to_string() }));
     }
 
     HttpResponse::Ok().finish()
@@ -103,7 +111,6 @@ async fn create(db: Data<Database>, store: Data<Storage>, mut payload: Multipart
     let mut db = db.get_connection().unwrap();
     let user_id = get_user(auth.token().parse().unwrap());
     
-
     while let Some(item) = payload.next().await {
         let mut field = if item.is_ok() {
             item.unwrap()
@@ -114,67 +121,52 @@ async fn create(db: Data<Database>, store: Data<Storage>, mut payload: Multipart
 
         let content_disposition = field.content_disposition();
         let file_name = content_disposition.get_filename().map(|f| f.to_string());
-        let field_name = content_disposition
-            .get_name().unwrap();
+        let field_name = content_disposition.get_name().unwrap();
 
-        match field_name {
-            "file" => {
-                let mut data = Vec::new();
-                while let Some(chunk) = field.next().await {
-                    data.extend_from_slice(&chunk.unwrap()[..]);
-                }
-
-                let attached_req = Attachment::attach(&mut db, &store, user_id.unwrap(), file_name.clone().unwrap(), "NULL".to_string(), 0, AttachmentData {
-                    data: data.clone(),
-                    file_name: file_name.clone(),
-                }, true, false).await;
-
-                if attached_req.is_err() {
-                    debug!("Error attaching file: {:?}", attached_req);
-                    return HttpResponse::InternalServerError().json(attached_req.err().unwrap());
-                }
-            },
-            _ => {}
-        }
+        debug!("File Name: {:?}", file_name);
+        debug!("user_id: {:?}", user_id);
+        
     }
 
     HttpResponse::Ok().finish()
 }
 
-#[actix_web::post("/share")]
-async fn share_video(
-    db: Data<Database>,
-    auth: BearerAuth,
-    share_req: Json<ShareVideoRequest>,
-) -> HttpResponse {
-    let mut con = db.get_connection().unwrap();
-    let user_id = get_user(auth.token().parse().unwrap()).unwrap();
+// #[actix_web::post("/share")]
+// async fn share_video(
+//     db: Data<Database>,
+//     auth: BearerAuth,
+//     share_req: Json<ShareVideoRequest>,
+// ) -> HttpResponse {
+//     let mut con = db.get_connection().unwrap();
+//     let user_id = get_user(auth.token().parse().unwrap()).unwrap();
     
-    debug!("Share Request: {:?}", share_req);
+//     debug!("Share Request: {:?}", share_req);
 
-    let share_token = Uuid::new_v4();
+//     let share_token = Uuid::new_v4();
 
-    let new_share = NewVideoShare {
-        video_id: share_req.video_id,
-        shared_by: user_id,
-        shared_with: share_req.shared_with.clone(),
-        share_token,
-        starts: share_req.starts.clone(),
-        expires: share_req.expires.clone(),
-    };
+//     let new_share = NewVideoShare {
+//         video_id: share_req.video_id,
+//         shared_by: user_id,
+//         shared_with: share_req.shared_with.clone(),
+//         share_token,
+//         starts: share_req.starts.clone(),
+//         expires: share_req.expires.clone(),
+//     };
 
-    let result = diesel::insert_into(video_shares::table)
-        .values(&new_share)
-        .get_result::<VideoShare>(&mut con);    
+//     // let result = diesel::insert_into(video_shares::table)
+//     //     .values(&new_share)
+//     //     .get_result::<VideoShare>(&mut con);    
 
-    debug!("Start At: {:?}", share_req.starts);
-    debug!("Expires At: {:?}", share_req.expires);
+//     debug!("Start At: {:?}", share_req.starts);
+//     debug!("Expires At: {:?}", share_req.expires);
 
-    match result {
-        Ok(_) => HttpResponse::Ok().json(json!({ "share_token": share_token })),
-        Err(_) => HttpResponse::InternalServerError().finish(),
-    }
-}
+//     // match result {
+//     //     Ok(_) => HttpResponse::Ok().json(json!({ "share_token": share_token })),
+//     //     Err(_) => HttpResponse::InternalServerError().finish(),
+//     // }
+
+//     HttpResponse::Ok().json(json!({ "share_token": share_token }))
+// }
 
 // #[actix_web::get("/shared/{token}")]
 // async fn get_shared_video(
@@ -215,11 +207,11 @@ async fn share_video(
 // }
 
 pub fn endpoints(scope: actix_web::Scope) -> actix_web::Scope {
-    return scope
+    scope
         .service(create)
         .service(delete)
         .service(index)
         .service(view)
-        .service(share_video)
+        // .service(share_video)
         // .service(get_shared_video);
 }

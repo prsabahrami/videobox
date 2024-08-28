@@ -4,14 +4,13 @@ use crate::diesel::*;
 use crate::schema::*;
 use diesel::QueryResult;
 use serde::{Deserialize, Serialize};
-use crate::models::attachments::Attachment;
 use crate::models::users::User;
+use crate::models::videos::Video;
 
 type Connection = create_rust_app::Connection;
 
-#[tsync::tsync]
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Identifiable, Associations, Selectable)]
-#[diesel(table_name=video_shares, primary_key(id), belongs_to(Attachment, foreign_key=video_id) , belongs_to(User, foreign_key=shared_by))]
+#[diesel(table_name=video_shares, primary_key(id), belongs_to(User, foreign_key=shared_by) , belongs_to(Video, foreign_key=video_id))]
 pub struct VideoShare {
     pub id: i32,
     pub video_id: i32,
@@ -23,7 +22,6 @@ pub struct VideoShare {
     pub created_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-#[tsync::tsync]
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
 #[diesel(table_name=video_shares)]
 pub struct CreateVideoShare {
@@ -35,7 +33,6 @@ pub struct CreateVideoShare {
     pub expires: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-#[tsync::tsync]
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
 #[diesel(table_name=video_shares)]
 pub struct UpdateVideoShare {
@@ -48,7 +45,6 @@ pub struct UpdateVideoShare {
     pub created_at: Option<Option<chrono::DateTime<chrono::Utc>>>,
 }
 
-#[tsync::tsync]
 #[derive(Debug, Serialize)]
 pub struct PaginationResult<T> {
     pub items: Vec<T>,
