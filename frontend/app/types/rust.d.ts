@@ -1,5 +1,3 @@
-/* This file is generated and managed by tsync */
-
 interface User {
   id: number;
   email: string;
@@ -32,41 +30,33 @@ interface PaginationResult<T> {
   num_pages: number;
 }
 
-interface Attachment {
+interface VideoShare {
   id: number;
-  user_id: number;
-  name: string;
-  record_type: string;
-  record_id: number;
-  blob_id: number;
-  created_at: Date;
+  video_id: number;
+  shared_by: number;
+  shared_with: string;
+  share_token: string;
+  starts?: Date;
+  expires?: Date;
+  created_at?: Date;
 }
 
-interface AttachmentBlob {
-  id: number;
-  key: string;
-  file_name: string;
-  content_type?: string;
-  byte_size: number;
-  checksum: string;
-  service_name: string;
-  created_at: Date;
+interface CreateVideoShare {
+  video_id: number;
+  shared_by: number;
+  shared_with: string;
+  share_token: string;
+  starts?: Date;
+  expires?: Date;
 }
 
-interface CreateAttachment {
-  user_id: number;
-  name: string;
-  record_type: string;
-  record_id: number;
-  blob_id: number;
-}
-
-interface UpdateAttachment {
-  user_id?: number;
-  name?: string;
-  record_type?: string;
-  record_id?: number;
-  blob_id?: number;
+interface UpdateVideoShare {
+  video_id?: number;
+  shared_by?: number;
+  shared_with?: string;
+  share_token?: string;
+  starts?: Date;
+  expires?: Date;
   created_at?: Date;
 }
 
@@ -79,14 +69,55 @@ interface PaginationResult<T> {
   num_pages: number;
 }
 
-interface FileInfo {
-  id: number;
-  key: string;
-  name: string;
-  url?: string;
+interface Video {
+  video_id: number;
+  user_id: number;
+  file_name: string;
+  course_name?: string;
+  stream_url: string;
+  created_at: Date;
+}
+
+interface CreateVideo {
+  user_id: number;
+  file_name: string;
+  course_name?: string;
+  stream_url: string;
+}
+
+interface UpdateVideo {
+  user_id?: number;
+  file_name?: string;
+  course_name?: string;
+  stream_url?: string;
+}
+
+interface PaginationResult<T> {
+  items: Array<T>;
+  total_items: number;
+  /** 0-based index */
+  page: number;
+  page_size: number;
+  num_pages: number;
+}
+
+interface Videos {
+  urls: Array<string>;
+  info: PaginationResult<Video>;
 }
 
 interface PaginationParams {
   page: number;
   page_size: number;
+}
+
+interface ViewParams {
+  id: number;
+}
+
+interface ShareVideoRequest {
+  video_id: number;
+  shared_with?: string;
+  starts?: string;
+  expires?: string;
 }

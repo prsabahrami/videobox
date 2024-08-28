@@ -8,7 +8,6 @@ use serde::{Deserialize, Serialize};
 
 type Connection = create_rust_app::Connection;
 
-#[tsync::tsync]
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Selectable)]
 #[diesel(table_name=users, primary_key(id))]
 pub struct User {
@@ -20,7 +19,6 @@ pub struct User {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-#[tsync::tsync]
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
 #[diesel(table_name=users)]
 pub struct CreateUser {
@@ -29,7 +27,6 @@ pub struct CreateUser {
     pub activated: bool,
 }
 
-#[tsync::tsync]
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
 #[diesel(table_name=users)]
 pub struct UpdateUser {
@@ -40,7 +37,6 @@ pub struct UpdateUser {
     pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-#[tsync::tsync]
 #[derive(Debug, Serialize)]
 pub struct PaginationResult<T> {
     pub items: Vec<T>,

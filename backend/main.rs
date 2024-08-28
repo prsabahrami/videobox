@@ -16,7 +16,8 @@ async fn main() -> std::io::Result<()> {
     #[cfg(debug_assertions)] create_rust_app::setup_development().await;
     let app_data = create_rust_app::setup();
     simple_logger::init_with_env().unwrap();
-
+    ffmpeg_next::init()?;
+    
     HttpServer::new(move || {
         let mut app = App::new()
             .wrap(Compress::default())
