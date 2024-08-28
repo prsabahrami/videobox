@@ -17,7 +17,7 @@ path = "backend/main.rs"
 [dependencies]
 actix-files = "0.6.5"
 actix-http = "3.6.0"
-actix-multipart = "0.6.1"
+actix-multipart = "0.7.2"
 actix-web = "4.5.1"
 futures-util = "0.3.30"
 create-rust-app = {git = "https://github.com/prsabahrami/create-rust-app.git", branch = "main", default-features = false, features=["plugin_auth", "plugin_auth-oidc", "plugin_container", "plugin_storage", "plugin_dev", "database_postgres", "backend_actix-web"]}
@@ -38,7 +38,7 @@ version = "0.4.38"
 [dependencies.diesel]
 default-features = false
 features = ["postgres", "r2d2", "chrono"]
-version = "=2.1.0"
+version = "2.2.3"
 
 [dependencies.serde]
 features = ["derive"]
