@@ -2068,17 +2068,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gix-fs"
-version = "0.11.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2bfe6249cfea6d0c0e0990d5226a4cb36f030444ba9e35e0639275db8f98575"
-dependencies = [
- "fastrand",
- "gix-features",
- "gix-utils",
-]
-
-[[package]]
 name = "gix-glob"
 version = "0.16.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2152,7 +2141,7 @@ dependencies = [
  "gix-actor",
  "gix-date",
  "gix-features",
- "gix-fs 0.10.2",
+ "gix-fs",
  "gix-hash",
  "gix-lock",
  "gix-object",
@@ -2183,7 +2172,7 @@ version = "13.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a761d76594f4443b675e85928e4902dec333273836bd386906f01e7e346a0d11"
 dependencies = [
- "gix-fs 0.10.2",
+ "gix-fs",
  "libc",
  "once_cell",
  "parking_lot",
@@ -5329,7 +5318,6 @@ dependencies = [
  "diesel",
  "ffmpeg-next",
  "futures-util",
- "gix-fs 0.11.3",
  "jsonwebtoken",
  "log",
  "reqwest 0.12.7",
@@ -5339,7 +5327,6 @@ dependencies = [
  "tempfile",
  "tokio",
  "uuid",
- "webpki",
 ]
 
 [[package]]
@@ -5511,16 +5498,6 @@ checksum = "26fdeaafd9bd129f65e7c031593c24d62186301e0c72c8978fa1678be7d532c0"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "webpki"
-version = "0.22.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed63aea5ce73d0ff405984102c42de94fc55a6b75765d621c65262469b3c9b53"
-dependencies = [
- "ring",
- "untrusted",
 ]
 
 [[package]]
