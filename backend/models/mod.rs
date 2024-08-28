@@ -1,3 +1,3 @@
 pub mod users;
 pub mod video_shares;
-pub mod attachments;
+pub mod videos;

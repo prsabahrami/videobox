@@ -14,7 +14,6 @@ const FilesAPI = {
 }
 
 export default function Home() {
-  const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState<boolean>(false);
   const [message, setMessage] = useState<string>("");
   const [show, setShow] = useState<string>("hidden");
@@ -25,15 +24,10 @@ export default function Home() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!file) {
-      setMessage("Please select a file to upload.");
-      return;
-    }
 
     setUploading(true);
 
     const formData = new FormData();
-    formData.append("file", file);
 
     const uploadResponse = await FilesAPI.create(formData, accessToken);
 
@@ -81,7 +75,6 @@ export default function Home() {
                 onChange={(e) => {
                   const files = e.target.files;
                   if (files) {
-                    setFile(files[0]);
                     setAccessToken(auth.accessToken!);
                   }
                 }}

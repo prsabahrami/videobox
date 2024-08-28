@@ -3,23 +3,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import VideoComponent from '../../components/VideoComponent'
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, Button } from '@headlessui/react'
-  
-interface Videos {
-  urls: string[]
-  info: PaginationResult<Attachment>
-}
-
-interface Video {
-  url: string
-  info: Attachment
-}
-
-interface ShareVideoRequest {
-  video_id: number
-  shared_with: string
-  starts: string
-  expires: string
-}
+import type { PaginationResult, Video } from '../types/global'
 
 const VideosAPI = {
     getVideos: async (page: number, size: number, accessToken: string) =>
@@ -36,19 +20,19 @@ const VideosAPI = {
             }
          }),
     shareVideo: async (accessToken: string, shareData: ShareVideoRequest): Promise<{ share_token: string }> => {
-          return (await fetch('/api/files/share', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${accessToken}`
-            },
-            body: JSON.stringify(shareData)
-          })).json()
-        }
+        return (await fetch('/api/files/share', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          body: JSON.stringify(shareData)
+        })).json()
+    }
 }
 
 export default function Videos() {
-    const [videos, setVideos] = useState<Videos | null>(null)
+    const [videos, setVideos] = useState<PaginationResult<Video> | null>(null)
     const pageSize = 4
     const [page, setPage] = useState<number>(0)
     const [numPages, setPages] = useState<number>(1)
@@ -119,7 +103,7 @@ export default function Videos() {
         console.log("formattedExpirationDateTime", formattedExpirationDateTime)
 
         const shareData: ShareVideoRequest = {
-          video_id: selectedVideo.info.id,
+          video_id: selectedVideo.video_id,
           shared_with: sharedWithEmail,
           starts: formattedStartDateTime,
           expires: formattedExpirationDateTime
@@ -153,13 +137,13 @@ export default function Videos() {
           </div>
           <div className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 border-t border-gray-200 pt-10 sm:mt-16 sm:pt-16 lg:mx-0 lg:max-w-none lg:grid-cols-3">
             {!videos && <p>You don't have any videos yet.</p>}
-            {videos && videos.urls.map((url, index) => (
-              <div key={videos.info.items[index].id}>
-                <VideoComponent url={url} />
+            {videos && videos.items.map((item: Video, index: number) => (
+              <div key={item.video_id}>
+                <VideoComponent url={item.url} />
                 <Button className="inline-flex items-center gap-2 rounded-md bg-gray-7000 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[open]:bg-gray-700 data-[focus]:outline-1
                  data-[focus]:outline-white" onClick={() => { 
                   let video = {
-                    url: url,
+                    url: item.url,
                     info: videos.info.items[index]
                   };
                   openShareModal(video)
@@ -270,4 +254,3 @@ export default function Videos() {
       </div>
     )
   }
-  

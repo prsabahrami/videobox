@@ -1,31 +1,6 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    attachment_blobs (id) {
-        id -> Int4,
-        key -> Text,
-        file_name -> Text,
-        content_type -> Nullable<Text>,
-        byte_size -> Int8,
-        checksum -> Text,
-        service_name -> Text,
-        created_at -> Timestamptz,
-    }
-}
-
-diesel::table! {
-    attachments (id) {
-        id -> Int4,
-        user_id -> Int4,
-        name -> Text,
-        record_type -> Text,
-        record_id -> Int4,
-        blob_id -> Int4,
-        created_at -> Timestamptz,
-    }
-}
-
-diesel::table! {
     role_permissions (role, permission) {
         role -> Text,
         permission -> Text,
@@ -100,17 +75,26 @@ diesel::table! {
     }
 }
 
-diesel::joinable!(attachments -> users (user_id));
+diesel::table! {
+    videos (video_id) {
+        video_id -> Int4,
+        user_id -> Int4,
+        file_name -> Text,
+        course_name -> Nullable<Text>,
+        stream_url -> Text,
+        created_at -> Timestamptz,
+    }
+}
+
 diesel::joinable!(user_oauth2_links -> users (user_id));
 diesel::joinable!(user_permissions -> users (user_id));
 diesel::joinable!(user_roles -> users (user_id));
 diesel::joinable!(user_sessions -> users (user_id));
-diesel::joinable!(video_shares -> attachments (video_id));
 diesel::joinable!(video_shares -> users (shared_by));
+diesel::joinable!(video_shares -> videos (video_id));
+diesel::joinable!(videos -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
-    attachment_blobs,
-    attachments,
     role_permissions,
     user_oauth2_links,
     user_permissions,
@@ -118,4 +102,5 @@ diesel::allow_tables_to_appear_in_same_query!(
     user_sessions,
     users,
     video_shares,
+    videos,
 );

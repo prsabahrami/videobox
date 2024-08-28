@@ -1,2 +1,1 @@
-DROP TABLE attachment_blobs;
-DROP TABLE attachments;
+DROP TABLE videos;

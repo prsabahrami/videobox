@@ -6,5 +6,4 @@
 build-log*.txt
 .DS_Store
 /.idea/
-Cargo.lock
 node_modules
