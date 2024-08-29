@@ -5,45 +5,10 @@ import React, { createContext, MutableRefObject, useCallback, useContext, useEff
 const MILLISECONDS_UNTIL_EXPIRY_CHECK = 10 * 1000 // check expiry every 10 seconds
 const REMAINING_TOKEN_EXPIRY_TIME_ALLOWED = 60 * 1000 // 1 minute before token should be refreshed
 
-class Permissions {
-    private readonly rolesSet: Set<string>
-    private readonly rolesArray: string[]
-
-    private readonly permissionsSet: Set<string>
-    private readonly permissionsArray: string[]
-
-    constructor(roles: string[], perms: Permission[]) {
-        this.rolesArray = roles
-        this.permissionsArray = perms.map(p => p.permission)
-
-        this.rolesSet = new Set(this.rolesArray)
-        this.permissionsSet = new Set(this.permissionsArray)
-    }
-
-    public get roles(): string[] {
-        return this.rolesArray
-    }
-
-    public get permissions(): string[] {
-        return this.permissionsArray
-    }
-
-    public hasRole = (role: string): boolean => {
-        return this.rolesSet.has(role)
-    }
-
-    public hasPermission = (permission: string): boolean => {
-        return this.permissionsSet.has(permission)
-    }
-}
-
 export interface Session {
     expiresOnUTC: number
     userId: ID
-    roles: string[]
-    permissions: string[]
-    hasRole(role: string): boolean
-    hasPermission(permission: string): boolean
+    role: string
 }
 
 interface AuthContext {
@@ -95,15 +60,11 @@ export const useAuth = () => {
         if (response.ok) {
             const responseJson = await response.json()
             const parsedToken = parseJwt(responseJson.access_token) as AccessTokenClaims
-            const permissions = new Permissions(parsedToken.roles, parsedToken.permissions)
             context.setAccessToken(responseJson.access_token)
             context.setSession({
                 userId: parsedToken.sub,
                 expiresOnUTC: parsedToken.exp,
-                roles: permissions.roles,
-                permissions: permissions.permissions,
-                hasPermission: permissions.hasPermission,
-                hasRole: permissions.hasRole,
+                role: parsedToken.role
             })
             return true
         } else {
@@ -141,15 +102,11 @@ export const useAuth = () => {
             return false
         } else {
             const parsedToken = parseJwt(access_token) as AccessTokenClaims
-            const permissions = new Permissions(parsedToken.roles, parsedToken.permissions)
             context.setAccessToken(access_token)
             context.setSession({
                 userId: parsedToken.sub,
                 expiresOnUTC: parsedToken.exp,
-                roles: permissions.roles,
-                permissions: permissions.permissions,
-                hasPermission: permissions.hasPermission,
-                hasRole: permissions.hasRole,
+                role: parsedToken.role,
             })
 
 
@@ -166,6 +123,9 @@ export const useAuth = () => {
     const logout = async (): Promise<boolean> => {
         const response = await fetch('/api/auth/logout', {
             method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${context.accessToken}`,
+            },
         })
 
         if (response.ok) {
@@ -219,16 +179,11 @@ export const useAuthCheck = () => {
             if (response.ok) {
                 const responseJson = await response.json()
                 const parsedToken = parseJwt(responseJson.access_token) as AccessTokenClaims
-                const permissions = new Permissions(parsedToken.roles, parsedToken.permissions)
-
                 context.setAccessToken(responseJson.access_token)
                 context.setSession({
                     userId: parsedToken.sub,
                     expiresOnUTC: parsedToken.exp,
-                    roles: permissions.roles,
-                    permissions: permissions.permissions,
-                    hasRole: permissions.hasRole,
-                    hasPermission: permissions.hasPermission,
+                    role: parsedToken.role,
                 })
             } else {
                 context.setAccessToken(undefined)
