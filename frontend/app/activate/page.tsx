@@ -1,18 +1,18 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../hooks/useAuth'
-import { useQueryParam } from '../hooks/useQueryParam'
 import Link from 'next/link'
 import { useFormStatus } from 'react-dom'
 
 function Form({
   action,
   children,
+  defaultToken,
 }: {
   action: any;
   children: React.ReactNode;
+  defaultToken: string;
 }) {
   return (
     <form
@@ -31,6 +31,7 @@ function Form({
           name="activationToken"
           type="password"
           required
+          defaultValue={defaultToken}
           className="text-black mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-black focus:outline-none focus:ring-black sm:text-sm"
         />
       </div>
@@ -76,26 +77,32 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
 }
 
 export const ActivationPage = () => {
-  const auth = useAuth()
   const router = useRouter()
-  const token = useQueryParam('token') || '';
-  const [activationToken, setActivationToken] = useState<string>(token)
-  const [processing, setProcessing] = useState<boolean>(false)
+  const [activationToken, setActivationToken] = useState<string>('')
+
+  useEffect(() => {
+    // Get the token from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token') || '';
+    setActivationToken(token);
+  }, []);
 
   const activate = async () => {
-    setProcessing(true)
     const response = await fetch(
-      `/api/auth/activate?activation_token=${activationToken}`,
+      `/api/auth/activate`,
       {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ activationToken: activationToken }),
       }
     )
     if (response.ok) {
       router.push('/login')
+    } else {
+      console.error('Failed to activate account')
     }
-    setProcessing(false)
   }
 
   return (
@@ -112,6 +119,7 @@ export const ActivationPage = () => {
             setActivationToken(formData.get('activationToken') as string)
             await activate()
           }}
+          defaultToken={activationToken}
         >
           <SubmitButton>Activate Account</SubmitButton>
           <p className="mt-4 text-center text-sm text-gray-600">

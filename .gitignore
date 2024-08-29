@@ -7,3 +7,6 @@ build-log*.txt
 .DS_Store
 /.idea/
 node_modules
+/.vscode/
+service-account.json
+/tmp/

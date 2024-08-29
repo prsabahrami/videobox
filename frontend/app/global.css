@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import 'plyr/dist/plyr.css';
 
 :root {
   --foreground-rgb: 0, 0, 0;
@@ -134,4 +135,13 @@ body {
 .gsi-material-button:not(:disabled):hover .gsi-material-button-state {
   background-color: #303030;
   opacity: 8%;
+}
+
+.video-container {
+  margin: 20px auto;
+  max-width: 600px;
+}
+
+.react-datepicker-popper {
+  z-index: 9999 !important;
 }

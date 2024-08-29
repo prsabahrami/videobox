@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
-require("dotenv").config();
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const test_url = process.env.TEST_URL;
 const test_email = process.env.TEST_EMAIL;
@@ -18,9 +20,12 @@ const get_ipts = async (page) => {
 };
 
 test("home page test", async ({ page }) => {
+  if (test_url === undefined) {
+    throw new Error("TEST_URL environment variable is not set");
+  }
   await page.goto(test_url);
 
-  // Expect a context "React App" a substring.
+  // Expect a title containing "React App" as a substring.
   await expect(page).toHaveTitle(/React App/);
 
   await page.click("text=Login/Register");
@@ -29,6 +34,9 @@ test("home page test", async ({ page }) => {
 
 test.describe("login/register page tests", () => {
   test.beforeEach(async ({ page }) => {
+    if (test_url === undefined) {
+      throw new Error("TEST_URL environment variable is not set");
+    }
     await page.goto(test_url);
     await page.click("text=Login/Register");
   });

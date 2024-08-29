@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../hooks/useAuth'
@@ -137,6 +137,12 @@ export const LoginPage = () => {
   const [processing, setProcessing] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
 
+  useEffect(() => {
+    if (auth.isAuthenticated) {
+      navigate.push('/')
+    }
+  }, [auth.isAuthenticated, navigate])
+
   const login = async () => {
     setProcessing(true)
     let res = await auth.login(email, password)
@@ -147,7 +153,6 @@ export const LoginPage = () => {
   }
 
   if (auth.isAuthenticated) {
-    navigate.push('/')
     return <div>Already logged in. Redirecting you to the home page...</div>
   }
 
