@@ -2,14 +2,14 @@ package models
 
 import (
     "time"
-    "github.com/google/uuid"
 )
 
 type VideoShare struct {
     VideoID    int        `gorm:"primaryKey"`
     SharedBy   int        `gorm:"primaryKey"`
-    SharedWith *string
-    ShareToken uuid.UUID
+    SharedWith string
+    ShareToken string
+    CourseName string
     Starts     *time.Time
     Expires    *time.Time
     CreatedAt  time.Time
@@ -18,8 +18,9 @@ type VideoShare struct {
 type NewVideoShare struct {
     VideoID    int
     SharedBy   int
-    SharedWith *string
-    ShareToken uuid.UUID
+    SharedWith string
+    ShareToken string
+    CourseName string
     Starts     *time.Time
     Expires    *time.Time
 }

@@ -75,11 +75,10 @@ export default function UploadPage() {
         const response = await fetch(signedURL, {
           method: 'POST',
           headers: {
-            'Content-Type': 'text/plain; charset=UTF-8',
+            'Content-Type': 'application/octet-stream',
             'x-goog-resumable': 'start'
           },
         });
-        console.log("Signed URL: ", signedURL);
         console.log("Response: ", response);
         const location = response.headers.get('Location');
         console.log("Location: ", location);
@@ -124,8 +123,8 @@ export default function UploadPage() {
         }
         transcode();
       } catch (error) {
-        console.error("Upload Error:", error);
-        setMessage("Upload failed due to a network error.");
+        console.error("Transcode Error:", error);
+        setMessage("Transcode failed due to a network error.");
       }
     } catch (error) {
       console.error("Upload Error:", error);

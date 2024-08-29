@@ -1,12 +1,9 @@
 package models
 
-import (
-    "time"
-)
-
 type ShareVideoRequest struct {
-    VideoID    int       `json:"video_id" binding:"required"`
-    SharedWith *string   `json:"shared_with"`
-    Starts     *time.Time `json:"starts"`
-    Expires    *time.Time `json:"expires"`
+    VideoID    int    `json:"videoId" binding:"required"`
+    SharedWith string `json:"sharedWith" binding:"required"`
+    CourseName string `json:"courseName" binding:"required"`
+    Starts     string `json:"starts"`
+    Expires    string `json:"expires"`
 }

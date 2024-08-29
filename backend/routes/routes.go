@@ -26,7 +26,6 @@ func SetupRouter() *gin.Engine {
         }
 
         // Other API routes
-        api.GET("/pg", middleware.AuthMiddleware(models.RoleCoach), controllers.Index)
         api.DELETE("/delete/:id", middleware.AuthMiddleware(models.RoleCoach), controllers.Delete)
 		api.POST("/create", middleware.AuthMiddleware(models.RoleCoach), controllers.Create)
         api.POST("/transcode", middleware.AuthMiddleware(models.RoleCoach), controllers.Transcode)
@@ -34,6 +33,7 @@ func SetupRouter() *gin.Engine {
 		api.GET("/view/:token", middleware.AuthMiddleware(models.RoleStudent), controllers.GetSharedVideo)
 		api.GET("/courses", middleware.AuthMiddleware(models.RoleCoach), controllers.GetCourses)
 		api.POST("/courses", middleware.AuthMiddleware(models.RoleCoach), controllers.CreateCourse)
+        api.GET("/videos", middleware.AuthMiddleware(models.RoleCoach), controllers.Index)
     }
 
 

@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/prsabahrami/videobox/backend/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -32,11 +31,11 @@ func ConnectDB() {
     log.Println("database connected successfully")
 
     // Run auto-migration
-    // err = AutoMigrate()
-    // if err != nil {
-    //     log.Fatalf("failed to run auto-migration: %v", err)
-    // }
-    // log.Println("auto-migration completed successfully")
+    err = AutoMigrate()
+    if err != nil {
+        log.Fatalf("failed to run auto-migration: %v", err)
+    }
+    log.Println("auto-migration completed successfully")
 }
 
 // AutoMigrate runs auto-migration for all models

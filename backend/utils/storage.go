@@ -68,17 +68,28 @@ func InitStorage() error {
 	return nil
 }
 
-func GenerateSignedURL(objectName string) (string, error) {
-	contentType := "text/plain; charset=UTF-8"
+func GenerateSignedURL(objectName string, method string) (string, error) {
+	contentType := "application/octet-stream"
 	url, err := storage.SignedURL(bucketName, objectName, &storage.SignedURLOptions{
-		Method:         "POST",
+		Method:         method,
 		GoogleAccessID: cfg.Email,
 		PrivateKey:     cfg.PrivateKey,
 		Expires:        time.Now().Add(time.Second * 1000),
-		ContentType:    contentType,
-		Headers: []string{
-			"x-goog-resumable: start",
-		},
+		ContentType:    func() string {
+			if method == "POST" {
+				return contentType
+			}
+			return ""
+		}(),
+		Headers: func() []string {
+			if method == "POST" {
+				return []string{
+					"x-goog-resumable: start",
+					"Content-Type: application/octet-stream",
+				}
+			}
+			return nil
+		}(),
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to generate signed URL: %v", err)

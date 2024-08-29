@@ -16,7 +16,7 @@ func main() {
 	}
     config.ConnectDB()
 	utils.InitStorage()
-    utils.InitTranscode()
+	utils.InitMux()
     r := routes.SetupRouter()
     r.Run(":8000")
 }

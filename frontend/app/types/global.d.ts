@@ -17,8 +17,19 @@ declare global {
     userId: ID;
     fileName: string;
     courseId: ID;
+    streamURL: string;
     createdAt: string;
     user: User;
+  }
+  
+
+  interface VideoWithSignedUrl {
+    id: ID;
+    fileName: string;
+    courseName: string;
+    playbackId: string;
+    createdAt: string;
+    duration: number;
   }
 
   interface Course {
@@ -35,6 +46,7 @@ declare global {
     sharedBy: ID;
     sharedWith: string | null;
     shareToken: string;
+    courseName: string;
     starts: string | null;
     expires: string | null;
     createdAt: string;
@@ -45,6 +57,7 @@ declare global {
     sharedBy: ID;
     sharedWith: string | null;
     shareToken: string;
+    courseName: string;
     starts: string | null;
     expires: string | null;
   }
@@ -52,6 +65,7 @@ declare global {
   interface ShareVideoRequest {
     videoId: ID;
     sharedWith: string | null;
+    courseName: string;
     starts: string | null;
     expires: string | null;
   }
