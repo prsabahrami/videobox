@@ -76,7 +76,7 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const ActivationPage = () => {
+export default function ActivationPage() {
   const router = useRouter()
   const [activationToken, setActivationToken] = useState<string>('')
 
@@ -139,5 +139,3 @@ export const ActivationPage = () => {
     </div>
   )
 }
-
-export default ActivationPage

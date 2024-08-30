@@ -11,13 +11,11 @@ export const metadata: Metadata = {
   description: 'Videobox offers secure, link-based video sharing without downloads, using Actix/Rust, NextJS, AWS S3, and PostgreSQL. It provides instant streaming specifically tailored for educational use, bypassing the limitations and costs of conventional cloud services.',
 }
 
-export function AppLayout({
+function AppLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-
-    
   /* CRA: app hooks */
   
   // @ts-ignore

@@ -129,7 +129,7 @@ function GoogleAuthButton({ setIsGoogleAuth }: { setIsGoogleAuth: (value: boolea
   );
 }
 
-export const LoginPage = () => {
+export default function LoginPage() {
   const auth = useAuth()
   const navigate = useRouter()
   const [email, setEmail] = useState<string>('')
@@ -189,5 +189,3 @@ export const LoginPage = () => {
     </div>
   );
 }
-
-export default LoginPage

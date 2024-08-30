@@ -58,7 +58,7 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const RegisterPage = () => {
+export default function RegisterPage() {
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [role, setRole] = useState<'Student' | 'Coach'>('Student')
@@ -187,5 +187,3 @@ export const RegisterPage = () => {
     </div>
   );
 }
-
-export default RegisterPage

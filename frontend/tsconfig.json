@@ -30,7 +30,7 @@
     ],
     "typeRoots": [
       "node_modules/@types",
-      "app/types"
+      "types"
     ]
   },
   "include": [
@@ -39,6 +39,6 @@
     "./next-env.d.ts",
   ],
   "exclude": [
-    "./node_modules"
+    "./node_modules",
   ]
 }
