@@ -19,5 +19,10 @@
     "@types/dotenv": "^6.1.1",
     "@types/node": "^20.14.9",
     "@types/react-icons": "^2.2.7"
-  }
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  } 
 }
