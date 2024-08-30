@@ -1,1 +1,1 @@
-web: goreman start
+web: ./goreman start

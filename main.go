@@ -18,14 +18,6 @@ func main() {
     // if err != nil {
     //     log.Fatalf("Error loading .env file: %v", err)
 	// }
-
-    // Install goreman CLI tool 
-	// This is hacky asf :))
-    cmd := exec.Command("go", "install", "github.com/prsabahrami/goreman@latest")
-    if err := cmd.Run(); err != nil {
-        fmt.Printf("Error installing goreman: %v\n", err)
-        os.Exit(1)
-    }
     config.ConnectDB()
 	utils.InitStorage()
 	utils.InitMux()
