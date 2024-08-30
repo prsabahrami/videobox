@@ -1,4 +1,9 @@
 {
+  "name": "drfitpro",
+  "version": "1.0.0",
+  "engines": {
+    "node": "20.x"
+  },
   "dependencies": {
     "@headlessui/react": "^2.1.1",
     "@mux/mux-player-react": "^2.9.1",
@@ -26,3 +31,4 @@
     "start": "next start"
   } 
 }
+  
