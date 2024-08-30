@@ -11,10 +11,10 @@ import (
 
 func main() {
     // Load .env file
-    err := godotenv.Load()
-    if err != nil {
-        log.Fatalf("Error loading .env file: %v", err)
-	}
+    // err := godotenv.Load()
+    // if err != nil {
+    //     log.Fatalf("Error loading .env file: %v", err)
+	// }
     config.ConnectDB()
 	utils.InitStorage()
 	utils.InitMux()
