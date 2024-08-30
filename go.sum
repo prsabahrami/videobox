@@ -146,6 +146,8 @@ github.com/prsabahrami/goreman v0.0.0-20240830055855-66523b28e023 h1:4zdKJHnr7/2
 github.com/prsabahrami/goreman v0.0.0-20240830055855-66523b28e023/go.mod h1:4WhN3B3dvK37dZK9B9t1oIA4fRfcjRMr1U6Qs8INucQ=
 github.com/prsabahrami/goreman v0.0.0-20240830064821-14eeab0ffd96 h1:S/9Dyc5Yye9n4j/5jH73I27yJ4NED88CU2lwjGwD9yo=
 github.com/prsabahrami/goreman v0.0.0-20240830064821-14eeab0ffd96/go.mod h1:4WhN3B3dvK37dZK9B9t1oIA4fRfcjRMr1U6Qs8INucQ=
+github.com/prsabahrami/goreman v0.0.0-20240830070759-16e01f1631bc h1:4KPXjMDZA6I/jH7l3q8YJpnYefV68rWIxAVuy8ktBgk=
+github.com/prsabahrami/goreman v0.0.0-20240830070759-16e01f1631bc/go.mod h1:4WhN3B3dvK37dZK9B9t1oIA4fRfcjRMr1U6Qs8INucQ=
 github.com/rogpeppe/go-internal v1.9.0/go.mod h1:WtVeX8xhTBvf0smdhujwtBcq4Qrzq/fJaraNFVN+nFs=
 github.com/rogpeppe/go-internal v1.12.0 h1:exVL4IDcn6na9z1rAb56Vxr+CgyK3nn3O+epU5NdKM8=
 github.com/rogpeppe/go-internal v1.12.0/go.mod h1:E+RYuTGaKKdloAfM02xzb0FW3Paa99yedzYV+kq4uf4=

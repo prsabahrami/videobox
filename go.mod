@@ -31,7 +31,7 @@ require (
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/prsabahrami/goreman v0.0.0-20240830064821-14eeab0ffd96 // indirect
+	github.com/prsabahrami/goreman v0.0.0-20240830070759-16e01f1631bc // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.52.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.53.0 // indirect
