@@ -11,7 +11,7 @@ func SetupRouter() *gin.Engine {
     r := gin.Default()
 
     // Set trusted proxies
-    r.SetTrustedProxies([]string{"127.0.0.1"})
+    r.SetTrustedProxies([]string{"localhost"})
 
     // API group
     api := r.Group("/api")
