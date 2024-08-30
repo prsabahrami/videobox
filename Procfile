@@ -1,1 +1,1 @@
-web: goreman start
+web: echo $PORT && goreman start
