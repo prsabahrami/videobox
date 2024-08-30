@@ -1,9 +1,9 @@
 package main
 
 import (
-	"log"
+	// "log"
 
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 	"github.com/prsabahrami/videobox/api/config"
 	"github.com/prsabahrami/videobox/api/routes"
 	"github.com/prsabahrami/videobox/api/utils"
