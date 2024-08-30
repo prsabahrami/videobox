@@ -1,5 +1,7 @@
 module github.com/prsabahrami/videobox
 
+// +heroku install github.com/prsabahrami/goreman github.com/prsabahrami/videobox
+
 go 1.23.0
 
 require (
