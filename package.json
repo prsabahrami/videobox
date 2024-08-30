@@ -42,6 +42,7 @@
     "ansi-to-react": "^6.1.6",
     "autoprefixer": "^10.4.19",
     "concurrently": "^8.2.2",
+    "eslint": "^9.9.1",
     "glob": "^8.1.0",
     "postcss": "^8.4.38",
     "reconnecting-websocket": "^4.4.0",

@@ -134,7 +134,6 @@ export const LoginPage = () => {
   const navigate = useRouter()
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
-  const [processing, setProcessing] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
 
   useEffect(() => {
@@ -144,9 +143,7 @@ export const LoginPage = () => {
   }, [auth.isAuthenticated, navigate])
 
   const login = async () => {
-    setProcessing(true)
     let res = await auth.login(email, password)
-    setProcessing(false)
     if (!res) {
       setError('Invalid email or password')
     }

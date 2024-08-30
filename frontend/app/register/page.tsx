@@ -63,7 +63,6 @@ export const RegisterPage = () => {
   const [password, setPassword] = useState<string>('')
   const [role, setRole] = useState<'Student' | 'Coach'>('Student')
   const [coachKey, setCoachKey] = useState<string>('')
-  const [processing, setProcessing] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
 
   const navigate = useRouter()
@@ -77,7 +76,6 @@ export const RegisterPage = () => {
       setError('Invalid coach key')
       return
     }
-    setProcessing(true)
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
@@ -95,7 +93,6 @@ export const RegisterPage = () => {
     } catch (err) {
       setError('An error occurred during registration')
     }
-    setProcessing(false)
   }
 
   return (
