@@ -49,11 +49,11 @@
     "vite": "^5.0.11"
   },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "preview": "next preview",
-    "start:dev": "npm install && next",
+    "dev": "next dev frontend",
+    "build": "next build frontend",
+    "start": "next start frontend",
+    "preview": "next preview frontend",
+    "start:dev": "npm install && next dev frontend",
     "test": "npx playwright test ./tests"
   },
   "eslintConfig": {
