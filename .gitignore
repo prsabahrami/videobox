@@ -10,3 +10,4 @@ node_modules
 /.vscode/
 service-account.json
 /tmp/
+.service_account.json

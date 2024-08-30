@@ -22,7 +22,7 @@ func InitStorage() error {
 	ctx := context.Background()
 
 	// Read the service account key file
-	googleSAKey, err := os.ReadFile("service-account.json")
+	googleSAKey, err := os.ReadFile(".service_account.json")
 	if err != nil {
 		return fmt.Errorf("failed to read service account key file: %v", err)
 	}
