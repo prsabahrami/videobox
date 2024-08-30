@@ -1,11 +1,11 @@
-package controllers 
+package controllers
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/prsabahrami/videobox/backend/config"
-	"github.com/prsabahrami/videobox/backend/models"
+	"github.com/prsabahrami/videobox/api/config"
+	"github.com/prsabahrami/videobox/api/models"
 )
 
 func CreateCourse(c *gin.Context) {

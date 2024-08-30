@@ -8,7 +8,7 @@ The inception of Videobox arose from the need for a simple, efficient way to sha
 
 ## Built With
 
-- **Actix/Rust**: Robust framework for building efficient and reliable backend services.
+- **Actix/Rust**: Robust framework for building efficient and reliable api services.
 - **React**: A JavaScript library for building user interfaces, ensuring a responsive and dynamic frontend.
 - **Diesel**: ORM used for database operations, primarily with PostgreSQL to manage user information securely and efficiently.
 - **AWS S3**: Utilized for secure and scalable storage of video files through multipart uploads.

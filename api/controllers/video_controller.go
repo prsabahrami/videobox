@@ -7,10 +7,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/prsabahrami/videobox/backend/config"
-	"github.com/prsabahrami/videobox/backend/middleware"
-	"github.com/prsabahrami/videobox/backend/models"
-	"github.com/prsabahrami/videobox/backend/utils"
+	"github.com/prsabahrami/videobox/api/config"
+	"github.com/prsabahrami/videobox/api/middleware"
+	"github.com/prsabahrami/videobox/api/models"
+	"github.com/prsabahrami/videobox/api/utils"
 	"gorm.io/gorm"
 )
 

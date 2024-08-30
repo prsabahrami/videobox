@@ -10,7 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/prsabahrami/videobox/backend/models"
+	"github.com/prsabahrami/videobox/api/models"
 )
 
 var SECRET_KEY = os.Getenv("SECRET_KEY")

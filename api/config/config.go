@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/prsabahrami/videobox/backend/models"
+	"github.com/prsabahrami/videobox/api/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

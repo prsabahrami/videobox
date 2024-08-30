@@ -2,9 +2,9 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/prsabahrami/videobox/backend/controllers"
-	"github.com/prsabahrami/videobox/backend/middleware"
-	"github.com/prsabahrami/videobox/backend/models"
+	"github.com/prsabahrami/videobox/api/controllers"
+	"github.com/prsabahrami/videobox/api/middleware"
+	"github.com/prsabahrami/videobox/api/models"
 )
 
 func SetupRouter() *gin.Engine {

@@ -1,11 +1,12 @@
 package main
 
 import (
-    "log"
-    "github.com/joho/godotenv"
-    "github.com/prsabahrami/videobox/backend/config"
-    "github.com/prsabahrami/videobox/backend/routes"
-	"github.com/prsabahrami/videobox/backend/utils"
+	"log"
+
+	"github.com/joho/godotenv"
+	"github.com/prsabahrami/videobox/api/config"
+	"github.com/prsabahrami/videobox/api/routes"
+	"github.com/prsabahrami/videobox/api/utils"
 )
 
 func main() {
