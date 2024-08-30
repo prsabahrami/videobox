@@ -75,6 +75,14 @@ declare global {
     role: Role;
     exp: number;
   }
+
+  interface Session {
+    id: ID;
+    userId: ID;
+    refreshToken: string;
+    createdAt: string;
+    updatedAt: string;
+  }
 }
 
 export {};
