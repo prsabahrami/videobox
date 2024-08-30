@@ -2,9 +2,6 @@ package main
 
 import (
 	// "log"
-	"os"
-	"os/exec"
-	"fmt"
 
 	// "github.com/joho/godotenv"
 	"github.com/prsabahrami/videobox/api/config"
